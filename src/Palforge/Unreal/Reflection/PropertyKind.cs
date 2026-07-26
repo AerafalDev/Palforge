@@ -1,0 +1,37 @@
+﻿namespace Palforge.Unreal.Reflection;
+
+public enum PropertyKind
+{
+    Unknown,
+    Bool,
+    Byte,
+    Enum,
+    Int8,
+    Int16,
+    Int32,
+    Int64,
+    UInt16,
+    UInt32,
+    UInt64,
+    Float,
+    Double,
+    Name,
+    Str,
+    Text,
+    Struct,
+    Object,
+    Class,
+    SoftObject,
+    SoftClass,
+    WeakObject,
+    LazyObject,
+    Interface,
+    Delegate,
+    MulticastInlineDelegate,
+    MulticastSparseDelegate,
+    Array,
+    Map,
+    Set,
+    FieldPath,
+    Optional
+}
