@@ -1,0 +1,23 @@
+# Visual Studio Code
+.vscode/
+
+# Visual Studio
+.vs/
+
+# Rider
+.idea/
+
+# xmake
+.xmake/
+
+# Build outputs
+[Bb]uild/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Bb]in/
+[Oo]bj/
+
+# Release artifacts produced by tools/pack.ps1
+/artifacts/
