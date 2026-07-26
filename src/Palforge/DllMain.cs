@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using Palforge.Hosting;
 
 namespace Palforge;
 
@@ -9,6 +10,7 @@ internal static class DllMain
     {
         try
         {
+            PalforgeApplication.Start();
         }
         catch (Exception exception)
         {
