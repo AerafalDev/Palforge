@@ -16,12 +16,12 @@ jobs:
         runs-on: windows-latest
 
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v7
               with:
                   fetch-depth: 0
 
             - name: Setup .NET
-              uses: actions/setup-dotnet@v4
+              uses: actions/setup-dotnet@v6
               with:
                   dotnet-version: 10.0.x
 
@@ -50,7 +50,7 @@ jobs:
               run: Compress-Archive -Path "bundle/Win64/*" -DestinationPath "Palforge-${{ github.ref_name }}-win-x64.zip"
 
             - name: Attach to the GitHub release
-              uses: softprops/action-gh-release@v2
+              uses: softprops/action-gh-release@v3
               with:
                   files: Palforge-${{ github.ref_name }}-win-x64.zip
                   generate_release_notes: true
