@@ -50,7 +50,7 @@ jobs:
               run: Compress-Archive -Path "bundle/Win64/*" -DestinationPath "Palforge-${{ github.ref_name }}-win-x64.zip"
 
             - name: Attach to the GitHub release
-              uses: softprops/action-gh-release@v2
+              uses: softprops/action-gh-release@v3
               with:
                   files: Palforge-${{ github.ref_name }}-win-x64.zip
                   generate_release_notes: true
