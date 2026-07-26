@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/Palforge.Proxy/Palforge.Proxy.csproj" />
+    <Project Path="src/Palforge/Palforge.csproj" />
   </Folder>
 </Solution>

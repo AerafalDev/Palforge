@@ -1,0 +1,17 @@
+﻿AllocConsole
+AttachConsole
+GetConsoleWindow
+GetStdHandle
+SetStdHandle
+CreateFile
+GetConsoleMode
+SetConsoleMode
+SetConsoleOutputCP
+SetConsoleTitle
+CP_UTF8
+ATTACH_PARENT_PROCESS
+VirtualQuery
+VirtualProtect
+ReadProcessMemory
+WriteProcessMemory
+GetCurrentProcess
