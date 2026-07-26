@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <PublishAot>true</PublishAot>
+    <NativeLib>Shared</NativeLib>
+    <AssemblyName>version</AssemblyName>
+    <RootNamespace>Palforge.Proxy</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <OptimizationPreference>Size</OptimizationPreference>
+    <StackTraceSupport>false</StackTraceSupport>
+    <EventSourceSupport>false</EventSourceSupport>
+    <UseSystemResourceKeys>true</UseSystemResourceKeys>
+    <DebuggerSupport>false</DebuggerSupport>
+    <AutoreleasePoolSupport>false</AutoreleasePoolSupport>
+    <HttpActivityPropagationSupport>false</HttpActivityPropagationSupport>
+    <MetadataUpdaterSupport>false</MetadataUpdaterSupport>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="HostFxrSharp" />
+  </ItemGroup>
+
+</Project>
