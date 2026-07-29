@@ -1,7 +1,7 @@
 ﻿using Palforge.Unreal.Reflection;
 using Palforge.Unreal.Runtime;
 
-namespace Palforge.Unreal.Api;
+namespace Palforge.Unreal;
 
 public sealed class UnrealApi
 {
