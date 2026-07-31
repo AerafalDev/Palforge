@@ -3,6 +3,9 @@
     <Project Path="src/Palforge.Proxy/Palforge.Proxy.csproj" />
     <Project Path="src/Palforge/Palforge.csproj" />
   </Folder>
+  <Folder Name="/templates/">
+    <Project Path="templates/Palforge.Templates.csproj" />
+  </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Palforge.Tests/Palforge.Tests.csproj" />
   </Folder>
