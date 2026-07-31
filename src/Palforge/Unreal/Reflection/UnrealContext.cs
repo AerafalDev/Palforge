@@ -524,6 +524,118 @@ internal sealed class UnrealContext
         return NameOf(current);
     }
 
+    internal IReadOnlyList<(UObject Instance, FProperty Property)> FindLiveExamples(params PropertyKind[] kinds)
+    {
+        var all = new HashSet<PropertyKind>(kinds);
+        var wanted = new HashSet<PropertyKind>(kinds);
+        var best = new Dictionary<PropertyKind, (UObject, FProperty)>();
+        var fallback = new Dictionary<PropertyKind, (UObject, FProperty)>();
+        var byClass = new Dictionary<nint, List<FProperty>>();
+        var scanned = 0;
+
+        foreach (var address in _objects.Addresses())
+        {
+            if (wanted.Count is 0 || scanned++ > MaxExampleScan)
+                break;
+
+            if ((ObjectFlagsOf(address) & EObjectFlags.ClassDefaultObject) is not 0)
+                continue;
+
+            var classPointer = ClassPointerOf(address);
+
+            if (classPointer is 0)
+                continue;
+
+            if (!byClass.TryGetValue(classPointer, out var properties))
+            {
+                properties = [];
+
+                foreach (var property in new UClass(classPointer, this).AllProperties)
+                {
+                    if (all.Contains(property.Kind))
+                        properties.Add(property);
+                }
+
+                byClass[classPointer] = properties;
+            }
+
+            if (properties.Count is 0)
+                continue;
+
+            var instance = Wrap(address);
+
+            foreach (var property in properties)
+            {
+                if (!wanted.Contains(property.Kind))
+                    continue;
+
+                fallback.TryAdd(property.Kind, (instance, property));
+
+                if (!IsTrivialValue(property.FormatValue(instance.Address)))
+                {
+                    best[property.Kind] = (instance, property);
+                    wanted.Remove(property.Kind);
+                }
+            }
+        }
+
+        var found = new List<(UObject, FProperty)>();
+
+        foreach (var kind in kinds)
+        {
+            if (best.TryGetValue(kind, out var example) || fallback.TryGetValue(kind, out example))
+                found.Add(example);
+        }
+
+        return found;
+    }
+
+    private static bool IsTrivialValue(string value)
+    {
+        return value is "" or "\"\"" or "None" or "[]" or "{}" or "0" or "null" or "false" or "<sparse: unbound>";
+    }
+
+    internal (UObject Instance, FProperty Property)? FindLiveExample(Func<UObject, FProperty, bool> match)
+    {
+        ArgumentNullException.ThrowIfNull(match);
+
+        var byClass = new Dictionary<nint, List<FProperty>>();
+        var scanned = 0;
+
+        foreach (var address in _objects.Addresses())
+        {
+            if (scanned++ > MaxExampleScan)
+                break;
+
+            if ((ObjectFlagsOf(address) & EObjectFlags.ClassDefaultObject) is not 0)
+                continue;
+
+            var classPointer = ClassPointerOf(address);
+
+            if (classPointer is 0)
+                continue;
+
+            if (!byClass.TryGetValue(classPointer, out var properties))
+            {
+                properties = [.. new UClass(classPointer, this).AllProperties];
+                byClass[classPointer] = properties;
+            }
+
+            if (properties.Count is 0)
+                continue;
+
+            var instance = Wrap(address);
+
+            foreach (var property in properties)
+            {
+                if (match(instance, property))
+                    return (instance, property);
+            }
+        }
+
+        return null;
+    }
+
     internal UObject? FindFirstOf(string className)
     {
         foreach (var instance in FindAllOf(className))
