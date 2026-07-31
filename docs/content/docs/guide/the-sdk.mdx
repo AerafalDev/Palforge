@@ -1,0 +1,130 @@
+---
+title: The generated SDK
+description: Typed C# classes, structs and enums that bridge to the engine at runtime.
+---
+
+The SDK is a large set of generated C# types that mirror Palworld's Unreal classes, structs and enums.
+Instead of finding a `UObject` by name and reading properties by string, you work with real types —
+`PalPlayerController`, `Vector`, `EPalActionType` — with typed properties and methods.
+
+```csharp
+using Palforge.Sdk.Script.Pal;
+
+PalPlayerController? controller = Unreal.FindFirstOf<PalPlayerController>();
+if (controller is { BAdmin: true })
+{
+    // typed property, no string, no offset
+}
+```
+
+## How it's organized
+
+Types are grouped by their Unreal package under the `Palforge.Sdk` namespace:
+
+| Package path | Namespace | Kind |
+| --- | --- | --- |
+| `/Script/Pal` | `Palforge.Sdk.Script.Pal` | Native (C++-declared) Palworld classes. |
+| `/Script/Engine` | `Palforge.Sdk.Script.Engine` | Native Unreal Engine classes (`Actor`, `World`, …). |
+| `/Script/CoreUObject` | `Palforge.Sdk.Script.CoreUObject` | Core value types (`Vector`, `Rotator`, `Transform`, …). |
+| `/Game/…` | `Palforge.Sdk.Game.…` | Blueprint-generated (asset-backed) types. |
+
+`Script.*` types are native `UClass`/`UScriptStruct`/`UEnum`; `Game.*` types are blueprint-generated.
+Both are emitted the same way and cross-reference each other freely — the split is purely package
+origin.
+
+## Anatomy of a generated type
+
+### Classes
+
+A generated class derives from its Unreal superclass, all the way up to the hand-written `UObject` root:
+
+```csharp
+public class PalPlayerController : Palforge.Sdk.Script.CommonGame.CommonPlayerController
+{
+    // Static helpers:
+    public static new UClass? StaticClass();
+    public static new PalPlayerController? Spawn(UObject? owner = null, UStructValue? at = null);
+    public static new PalPlayerController? Load(string path);
+
+    // Properties — direct reads/writes at a derived offset:
+    public bool  BAdmin { get; set; }                       // bitfield bool
+    public float WeaponPaletteLongPressTime { get; set; }   // POD scalar
+    public PalAIActionComponent? AIActionComponent { get; set; }  // object pointer
+
+    // Methods — call the engine's UFunction via ProcessEvent:
+    public bool TrySwitchOtomo();
+    public void SetAutoRun(bool bEnable);
+}
+```
+
+### Structs and enums
+
+Structs derive from `UStructValue`, carry the engine struct name, and add a static `Allocate()` for
+creating a native instance:
+
+```csharp
+public class Vector : UStructValue
+{
+    public double X { get; set; }   // 0x0
+    public double Y { get; set; }   // 0x8
+    public double Z { get; set; }   // 0x10
+    public static Vector? Allocate();
+}
+```
+
+Enums are plain C# enums with explicit values:
+
+```csharp
+public enum EPalActionType { None = 0, Sleep = 1, WakeUp = 2, /* … */ }
+```
+
+<Callout type="info">
+Palworld runs on **UE5.1 with Large World Coordinates**, so core math types are **double-precision** —
+`Vector`, `Rotator` and friends use `double`, not `float`. Where UE declares both, the SDK emits both as
+distinct types (`Box3f` vs `Box3d`), with precision in the name.
+</Callout>
+
+## How it bridges to the engine
+
+The two halves of a type reach the game very differently:
+
+- **Properties are direct memory access** at a byte offset baked in at generation time (the offset the
+  runtime *derived*). Reading `controller.BAdmin` reads the object's memory at that offset — no engine
+  call. This is fast and safe to do from any thread.
+- **Methods go through `ProcessEvent`.** Calling `controller.TrySwitchOtomo()` marshals the arguments
+  into a parameter frame and invokes the engine's real `ProcessEvent` through the object's vtable, then
+  reads back the return and any out-parameters. Like all engine calls, this is
+  [game-thread-only](/docs/architecture#the-game-thread).
+
+`SdkRegistry` maps every engine class name to its C# factory, so a raw pointer read from memory (for
+example an object-typed property) is wrapped into the most-derived C# type automatically.
+
+## Regenerating the SDK
+
+The SDK is committed output, but it is produced by an **in-process generator** that reads the live
+reflection graph — offsets and sizes come from the running server, so generation must happen inside the
+injected runtime against a live Palworld process. Enable it in
+[`Configuration.cfg`](/docs/configuration#unreal):
+
+```ini
+[Unreal]
+GenerateSdk=true
+SdkOutput=
+```
+
+On the next start (after the layout is derived), Palforge regenerates the SDK into `SdkOutput` (default
+`Palforge\Sdk`). You can also trigger a regeneration at runtime by dropping a `.regenerate` file into the
+output directory.
+
+<Callout type="warn">
+Regenerating overwrites the SDK to match the **current** server build. Do it after a Palworld update so
+your typed offsets and function signatures stay correct — then rebuild plugins against the new SDK.
+</Callout>
+
+## Next steps
+
+<Cards>
+  <Card title="Live game state" href="/docs/guide/live-game-state" description="Find and use these typed objects at runtime." />
+  <Card title="Hooks" href="/docs/guide/hooks" description="Target engine functions by their SDK type." />
+  <Card title="Configuration" href="/docs/configuration" description="Enable SDK generation and set the output path." />
+</Cards>

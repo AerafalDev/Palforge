@@ -1,0 +1,150 @@
+---
+title: Hooks
+description: Intercept native engine functions before or after they run.
+---
+
+A hook lets you run your own code around a native Unreal function — inspect or change its arguments,
+cancel it, or read and replace its return value. Palforge discovers `[PreHook]` and `[PostHook]` methods
+in your plugin assembly and binds them automatically; each is revoked when the plugin stops.
+
+## Declaring a hook
+
+```csharp
+using Palforge.Hooks.Attributes;
+using Palforge.Sdk.Script.Pal;
+
+public sealed class ChatHooks
+{
+    [PreHook("PalPlayerController:EnterChat_Receive")]
+    public void BeforeChat(PalPlayerController self)
+    {
+        // runs before the engine handles the chat RPC
+    }
+}
+```
+
+- **`[PreHook]`** runs *before* the original function and can [cancel it](#cancelling-the-original).
+- **`[PostHook]`** runs *after* the original and can [read or replace the return value](#reading-the-return-value).
+
+A hook method may be `static` or an instance method (the declaring type is resolved from DI, or
+default-constructed). A single method can carry multiple hook attributes.
+
+## Targeting a function
+
+There are four equivalent ways to name the target `Class:Function`:
+
+```csharp
+[PreHook("PalPlayerController:EnterChat_Receive")]           // "Class:Function"
+[PreHook("PalPlayerController", "EnterChat_Receive")]        // class + function
+[PreHook(typeof(PalPlayerController), "EnterChat_Receive")]  // typed wrapper
+[PreHook<PalPlayerController>("EnterChat_Receive")]          // generic typed wrapper
+```
+
+The typed forms translate the [generated SDK](/docs/guide/the-sdk) type to its engine class name, so
+they only work for SDK types; the string forms work for any class in the running game. The class and
+function must exist at bind time, or the hook throws with a helpful message.
+
+### Including overrides
+
+Set `IncludeOverrides = true` to also hook subclasses that override the function:
+
+```csharp
+[PreHook<PalPlayerController>("EnterChat_Receive", IncludeOverrides = true)]
+public bool BeforeChat(PalPlayerController self) => true;
+```
+
+## Hook method parameters
+
+The binder fills your parameters from the live call. You only declare the ones you care about:
+
+| Parameter | Bound to |
+| --- | --- |
+| First by-value param assignable to `UObject` | `context.Self` — the instance the function was called on. Use the SDK wrapper type (e.g. `PalPlayerController self`). |
+| A parameter named `result` | The function's **return value** (value types only). Use `ref`/`out` to overwrite it. |
+| Any other parameter | Matched **by name** against the function's parameters. |
+
+Matched parameters can be `UObject`-derived (read-only), `string` (writable with `ref`), a generated
+`UStructValue` struct (read-only), or a primitive/enum (writable with `ref`). A `ref` parameter is
+**written back** into the call frame after your method returns, so you can rewrite an argument:
+
+```csharp
+// Suppose the engine function is  TakeDamage(float amount, AActor* instigator)
+[PreHook("PalPlayerCharacter:TakeDamage")]
+public void OnTakeDamage(PalPlayerCharacter self, ref float amount)
+{
+    amount *= 0.5f;   // halve all incoming damage
+}
+```
+
+<Callout type="info">
+If the target instance isn't actually of the type you declared for `self`, the hook is **skipped** for
+that call — so a hook typed to `PalPlayerCharacter` won't fire for unrelated objects sharing the function.
+</Callout>
+
+## Cancelling the original
+
+A **pre-hook** that returns `bool` votes on whether the original runs: return **`false`** to skip it,
+`true` to let it proceed.
+
+```csharp
+[PreHook<PalPlayerController>("EnterChat_Receive")]
+public bool GateChat(PalPlayerController self)
+{
+    return self.BAdmin;   // non-admins: original EnterChat_Receive is skipped
+}
+```
+
+You can also cancel explicitly by taking a `HookContext` and calling `context.SkipOriginal()`.
+
+## Reading the return value
+
+In a **post-hook**, take a `result` parameter, or use the `HookContext` to read and replace the return:
+
+```csharp
+using Palforge.Unreal.Hooks;
+
+[PostHook("SomeClass:ComputeScore")]
+public static void ClampScore(HookContext context)
+{
+    if (context.GetReturnValue<int>() < 0)
+        context.SetReturnValue(0);
+}
+```
+
+`HookContext` exposes `Self`, `Function`, `Get<T>/Set<T>`, `GetObject/SetObject`,
+`GetString/SetString`, `GetStruct`, `GetReturnValue<T>/SetReturnValue<T>`, `SkipOriginal()` and
+`OriginalSkipped`.
+
+## Manual hooks
+
+Inside `OnStart` you can register a hook directly through the [plugin scope](/docs/guide/plugins#the-plugin-scope),
+which returns an `IDisposable` auto-revoked on stop. The callback receives a `HookContext`:
+
+```csharp
+protected override void OnStart()
+{
+    Scope.Hook("PalPlayerController", "EnterChat_Receive",
+        prefix: context =>
+        {
+            // inspect context.Self, args, call context.SkipOriginal() to cancel
+        },
+        includeOverrides: true);
+}
+```
+
+`HookByName(functionName, prefix, postfix)` hooks by function name across classes when you don't have a
+specific class in hand.
+
+<Callout type="warn">
+Hooks run **on the game thread**, in the middle of engine execution. Keep them fast, don't block, and
+let exceptions be — a throw is caught and logged rather than crashing the server, but heavy work on the
+tick will stutter the game.
+</Callout>
+
+## Next steps
+
+<Cards>
+  <Card title="Live game state" href="/docs/guide/live-game-state" description="Read and write the objects your hooks receive." />
+  <Card title="The generated SDK" href="/docs/guide/the-sdk" description="Typed wrappers and engine class names used to target hooks." />
+  <Card title="Plugins" href="/docs/guide/plugins" description="How hooks are discovered and revoked with the plugin." />
+</Cards>

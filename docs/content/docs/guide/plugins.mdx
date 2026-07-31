@@ -1,0 +1,191 @@
+---
+title: Plugins
+description: The plugin lifecycle, dependency injection, the plugin scope, and hot reload.
+---
+
+A plugin is an ordinary .NET assembly with a class that derives from `Plugin`. Palforge discovers it on
+disk, constructs it through dependency injection, wires up its hooks and commands, and drives its
+lifecycle — all inside the game process.
+
+## The `Plugin` base class
+
+```csharp
+using Microsoft.Extensions.Logging;
+using Palforge.Plugins;
+using Palforge.Plugins.Attributes;
+
+[Plugin("com.example.myplugin", Name = "My Plugin", Author = "you", Version = "1.0.0")]
+public sealed class MyPlugin : Plugin
+{
+    protected override void OnStart() { /* set things up */ }
+    protected override void OnStop()  { /* tear things down */ }
+}
+```
+
+`Plugin` gives you four protected accessors, live once the host has attached the plugin:
+
+| Member | Type | What it is |
+| --- | --- | --- |
+| `Log` | `ILogger` | The plugin's own logger, written to `Palforge\Logs\<Name>-<date>.log`. |
+| `Unreal` | `UnrealApi` | The [reflection API](/docs/guide/live-game-state) — find, read and write live game objects. |
+| `Scope` | `PluginScope` | The [registration surface](#the-plugin-scope) — hooks, watchers, timers, all auto-cleaned. |
+| `Services` | `IServiceProvider` | The plugin's DI container. |
+
+<Callout type="warn">
+`Log`, `Unreal`, `Scope` and `Services` are **not available in the constructor or field initializers** —
+they throw until the host attaches the plugin. Take what you need through the constructor (see
+[Dependency injection](#dependency-injection)) or use `OnStart`.
+</Callout>
+
+### The `[Plugin]` attribute
+
+`[Plugin(id)]` marks your plugin class and carries optional metadata:
+
+```csharp
+[Plugin("com.example.myplugin", Name = "My Plugin", Author = "you", Version = "1.0.0")]
+```
+
+Only `id` is required. The attribute is itself optional — a plugin with none still loads, taking its
+id and name from its folder. `Version` falls back to the assembly version, then `0.0.0`.
+
+## Discovery
+
+Palforge loads plugins from `Palforge\Plugins\`, one folder per plugin. For a plugin named `MyPlugin`:
+
+```text
+Palforge\Plugins\MyPlugin\
+├─ MyPlugin.dll          required — the assembly name MUST equal the folder name
+├─ MyPlugin.cfg          optional — per-plugin INI configuration
+├─ MyPlugin.deps.json    used to resolve the plugin's private dependencies
+└─ …                     any private dependency / native DLLs
+```
+
+Palforge looks for `Plugins\<Name>\<Name>.dll`, then finds the first non-abstract `Plugin` subclass in
+it. If the assembly name doesn't match the folder, or there's no `Plugin` subclass, the plugin is
+skipped with a warning — one bad plugin never stops the others from loading.
+
+## Lifecycle
+
+The order is always the same:
+
+```text
+construct (DI)  →  Attach (Log/Unreal/Scope/Services become live)  →  OnStart  →  … running …  →  OnStop
+```
+
+`OnStart` runs on the [game thread](/docs/architecture#the-game-thread), so you can read and write game
+state directly from it. Do your setup there; do your teardown in `OnStop`.
+
+## Dependency injection
+
+Palforge builds a fresh service container per plugin. Your plugin type is registered automatically, so
+its **constructor is injected** — you can take `UnrealApi`, `PluginScope`, `IConfiguration`,
+`ILogger<T>`, or anything you register yourself.
+
+To register your own services, ship one `PluginConfiguration` subclass alongside your plugin. Palforge
+finds it, instantiates it, and calls `ConfigureServices` before it builds the container:
+
+```csharp
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Palforge.Plugins;
+
+public sealed class MyPluginConfiguration : PluginConfiguration
+{
+    protected override void ConfigureServices(IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddSingleton<GreetingService>();
+        services.AddSingleton(new WelcomeOptions(configuration["Welcome:Message"] ?? "Welcome!"));
+    }
+}
+```
+
+Then take the service through your plugin's constructor:
+
+```csharp
+[Plugin("com.example.myplugin")]
+public sealed class MyPlugin : Plugin
+{
+    private readonly GreetingService _greeting;
+
+    public MyPlugin(GreetingService greeting) => _greeting = greeting; // injected
+
+    protected override void OnStart() => _greeting.Greet();            // Log/Unreal/Scope live here
+}
+```
+
+### Per-plugin configuration
+
+The `IConfiguration` handed to `ConfigureServices` (and injectable into your plugin) is an **INI file
+named after the plugin folder**: `Plugins\<Name>\<Name>.cfg`. It is optional — a missing file yields an
+empty configuration — and it reloads on change. So `MyPlugin.cfg`:
+
+```ini
+[Welcome]
+Message=Welcome to the server!
+```
+
+is read as `configuration["Welcome:Message"]`.
+
+## The plugin scope
+
+`Scope` (a `PluginScope`) is how a plugin observes and reacts to the game. **Every registration returns
+an `IDisposable` and is revoked automatically when the plugin stops** — you rarely need to dispose them
+yourself.
+
+| Method | Fires when |
+| --- | --- |
+| `OnNewObject<T>(Action<T>)` / `OnNewObject(string className, Action<UObject>)` | A new object of that class (or a subclass) is created. |
+| `OnMapLoaded(Action<UObject>)` | A world / map loads (also fires immediately if one is already in play). |
+| `OnTick(Action)` | Every game tick, on the game thread. |
+| `AfterFrames(int, Action)` / `EveryFrames(int, Action)` | After / every N frames. |
+| `After(TimeSpan, Action)` / `Every(TimeSpan, Action)` | After / every interval. |
+| `Hook(className, functionName, prefix, postfix, includeOverrides)` / `HookByName(...)` | Manual [hooks](/docs/guide/hooks#manual-hooks). |
+| `Track(IDisposable)` | Hand the scope any disposable of your own to auto-clean on stop. |
+
+```csharp
+protected override void OnStart()
+{
+    Scope.OnMapLoaded(gameState => Log.LogInformation("Map loaded: {Name}", gameState.Name));
+    Scope.OnNewObject("PalPlayerCharacter", player => Log.LogInformation("Spawned: {Name}", player.Name));
+    Scope.Every(TimeSpan.FromMinutes(5), () => Log.LogInformation("5-minute heartbeat"));
+}
+```
+
+All scope callbacks run on the game thread, and a throw inside one is caught and logged rather than
+crashing the server.
+
+## Hooks and commands
+
+You don't register hooks or commands manually. Any `[PreHook]`/`[PostHook]` method and any
+`ChatCommandModule` in your assembly is discovered and bound for you at load — and unbound at unload.
+See [Hooks](/docs/guide/hooks) and [Commands](/docs/guide/commands).
+
+## Unload and reload
+
+Each plugin loads into its own **collectible** `AssemblyLoadContext`, so Palforge can unload and reload
+it without restarting the server. Admins drive this from chat:
+
+```text
+!plugin list
+!plugin load MyPlugin
+!plugin reload MyPlugin
+!plugin unload MyPlugin
+```
+
+On unload, Palforge stops the plugin (`OnStop`), revokes every scope registration (newest-first),
+disposes the container, then unloads the context and verifies it is actually garbage-collected.
+
+<Callout type="warn">
+The load context is only collected if **nothing outside the scope still references the plugin**. If you
+start your own thread, `Task`, or timer, stop it in `OnStop` — otherwise the old assembly stays pinned
+in memory and Palforge logs that the plugin could not be collected. Prefer `Scope.Every`/`Scope.OnTick`
+over your own threads; they're revoked for you.
+</Callout>
+
+## Next steps
+
+<Cards>
+  <Card title="Commands" href="/docs/guide/commands" description="Add chat commands with arguments, groups and permissions." />
+  <Card title="Hooks" href="/docs/guide/hooks" description="Intercept native engine functions." />
+  <Card title="Live game state" href="/docs/guide/live-game-state" description="Read and write live game objects through the scope's Unreal API." />
+</Cards>

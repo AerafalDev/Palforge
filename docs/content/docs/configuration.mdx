@@ -1,0 +1,96 @@
+---
+title: Configuration
+description: The Configuration.cfg reference and Palforge's on-disk layout.
+---
+
+Palforge reads a single required INI file, `Palforge\Configuration.cfg`, next to the server executable.
+It has three sections — `[Debug]`, `[Unreal]` and `[Commands]`. This page documents every key.
+
+<Callout type="warn">
+`Configuration.cfg` is **required**. If it's missing, the runtime fails to start. The shipped release
+bundle includes a default one — start from that.
+</Callout>
+
+```ini
+[Debug]
+EnableConsole=true
+EnableDebugger=false
+MinimumLevel=Debug
+
+[Unreal]
+SelfCheck=false
+GenerateSdk=false
+SdkOutput=
+
+[Commands]
+Prefix=!
+SenderName=Palforge
+```
+
+## [Debug]
+
+Console, debugger and logging.
+
+| Key | Default | Meaning |
+| --- | --- | --- |
+| `EnableConsole` | `true` | Allocate a **Palforge Dedicated Server** console window and route Palforge's output to it. When on, the game's own native stdout/stderr are silenced so the console stays readable. |
+| `EnableDebugger` | `false` | On plugin start, pause up to 300 seconds waiting for a managed debugger to attach. For plugin development only. |
+| `MinimumLevel` | `Debug` | The minimum log level for both the console and the log file. One of Serilog's levels: `Verbose`, `Debug`, `Information`, `Warning`, `Error`, `Fatal`. |
+
+Logs are written to `Palforge\Logs\Palforge-<date>.log` (daily rolling, 14 days retained). Each plugin
+also gets its own `Palforge\Logs\<Plugin>-<date>.log`.
+
+<Callout type="info">
+A `[Debug:Overrides]` section exists in the shipped file (per-source level overrides, e.g.
+`Microsoft=Warning`). It is parsed but **not yet applied** by the current runtime — treat it as reserved.
+</Callout>
+
+## [Unreal]
+
+The reflection runtime and SDK generation.
+
+| Key | Default | Meaning |
+| --- | --- | --- |
+| `SelfCheck` | `false` | After [layout derivation](/docs/architecture#layout-derivation), run an extra sanity pass over the derived layout. |
+| `GenerateSdk` | `false` | Regenerate the [typed SDK](/docs/guide/the-sdk) from the live reflection graph after derivation, and watch for a `.regenerate` trigger. |
+| `SdkOutput` | *(empty)* | Output directory for the generated SDK. Empty means `Palforge\Sdk`. |
+
+<Callout type="info">
+`DumpObjects` and `DumpActors` keys are recognized but **not wired** in the current build — reserved.
+</Callout>
+
+## [Commands]
+
+The chat [command](/docs/guide/commands) system.
+
+| Key | Default | Meaning |
+| --- | --- | --- |
+| `Prefix` | `!` | The prefix a chat message must start with to be treated as a command (e.g. `!ping`). A zero-length prefix disables prefix matching. |
+| `SenderName` | `Palforge` | The sender name shown on `Reply` / `Broadcast` chat messages. |
+
+## On-disk layout
+
+Everything Palforge uses lives under `Palforge\`, next to `PalServer-Win64-Shipping.exe`:
+
+```text
+…\PalServer\Pal\Binaries\Win64\
+├─ version.dll                 Palforge proxy
+└─ Palforge\
+   ├─ Configuration.cfg        this file (required)
+   ├─ Core\                    the managed runtime + bundled .NET (self-contained)
+   ├─ Logs\                    Palforge-<date>.log and <Plugin>-<date>.log
+   ├─ Plugins\                 one folder per plugin: <Name>\<Name>.dll (+ <Name>.cfg)
+   ├─ Sdk\                     generated SDK output (when GenerateSdk is on)
+   └─ Dumps\                   drop a '.dump' file to trigger a reflection dump
+```
+
+Per-plugin configuration is a separate INI at `Plugins\<Name>\<Name>.cfg` — see
+[Per-plugin configuration](/docs/guide/plugins#per-plugin-configuration).
+
+## Next steps
+
+<Cards>
+  <Card title="How Palforge works" href="/docs/architecture" description="What the runtime does with these settings at boot." />
+  <Card title="Plugins" href="/docs/guide/plugins" description="Per-plugin configuration and logging." />
+  <Card title="The generated SDK" href="/docs/guide/the-sdk" description="Enable and trigger SDK generation." />
+</Cards>

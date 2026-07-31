@@ -1,0 +1,126 @@
+---
+title: Live game state
+description: Find, read and write live game objects through the Unreal reflection API.
+---
+
+`Unreal` (a `UnrealApi`, available on every `Plugin`) is the safe surface for the live game. It finds
+objects and classes in the running process and returns typed wrappers you read and write. Under the
+hood it uses the [runtime-derived layout](/docs/architecture#layout-derivation), so every access is
+against offsets Palforge proved for *this* build.
+
+## Finding objects
+
+```csharp
+// By engine class name:
+UObject? world     = Unreal.FindFirstOf("World");
+UObject  gameState = Unreal.FindFirstOfOrThrow("PalGameStateInGame");
+
+// All live instances of a class (and its subclasses):
+foreach (UObject pal in Unreal.FindAllOf("PalCharacter"))
+    Log.LogInformation("Pal: {Name}", pal.Name);
+
+// A class, an object by name, or an asset:
+UClass  characterClass = Unreal.FindClassOrThrow("PalCharacter");
+UObject table          = Unreal.FindObjectOrThrow("DT_PalMonsterParameter");
+UObject asset          = Unreal.LoadAssetOrThrow("/Game/Pal/Blueprint/...");
+```
+
+Most finders come in a nullable form (`FindFirstOf`) and a throwing form (`FindFirstOfOrThrow`). There
+are also enumeration helpers — `AllClasses()`, `AllStructs()`, `AllEnums()`, `PackageOf(obj)` — and the
+typed generic forms when a [generated SDK](/docs/guide/the-sdk) wrapper exists:
+
+```csharp
+using Palforge.Sdk.Script.Engine;
+
+World? world = Unreal.FindFirstOf<World>();
+```
+
+## Reading and writing properties
+
+A `UObject` reads and writes its `UProperty`s by name. Reads are **width-checked** — asking for the
+wrong C# type throws rather than misreading memory:
+
+```csharp
+UObject gameState = Unreal.FindFirstOfOrThrow("PalGameStateInGame");
+
+int connected = gameState.Get<int>("mNumConnectedPlayers");   // checked read
+if (gameState.TryGet<float>("SomeFloat", out float value)) { /* … */ }
+
+// Writing a property is a game-thread operation (see below):
+UObject actor = Unreal.FindFirstOfOrThrow("PalPlayerCharacter");
+actor.Set<double>("Hp", 9999.0);
+```
+
+`Get<T>`, `TryGet<T>`, `Set<T>`, `TrySet<T>` work for unmanaged types. For strings, structs and objects,
+prefer the [generated SDK](/docs/guide/the-sdk) wrappers, which expose those as typed C# properties.
+
+## Data tables
+
+Palworld's balance data lives in `UDataTable`s. Enumerate rows, or fetch one by name — each row is a
+`UStructValue` you read like any struct:
+
+```csharp
+UObject table = Unreal.FindObjectOrThrow("DT_PalMonsterParameter");
+
+foreach ((string rowName, UStructValue row) in Unreal.Rows(table))
+{
+    // row.Get<…>("Column") / FindProperty(...) etc.
+}
+
+UStructValue boss = Unreal.RowOrThrow(table, "BOSS_Anubis");
+```
+
+## The wrapper types
+
+Everything you get back is one of a small, typed hierarchy:
+
+| Type | Represents | Highlights |
+| --- | --- | --- |
+| `UObject` | Any engine object | `Name`, `Class`, `Outer`, `Flags`, `IsA(UClass)`, `Get<T>`/`Set<T>`, `TryGet`/`TrySet`. |
+| `UStruct` / `UClass` | A struct / class | `Super`/`SuperClass`, `Properties`, `AllProperties`, `Functions`, `FindProperty`, `FindFunction`, `ClassDefaultObject`. |
+| `UFunction` | A callable function | `Parameters`, `ReturnParameter`, `IsStatic`, `Invoke(target, args)`. |
+| `FProperty` | A property/field | `Offset`, `ElementSize`, `ArrayDim`, `Kind`, `Get<T>(obj)`/`Set<T>(obj, …)`. |
+| `UStructValue` | A struct value (e.g. a table row) | `IDisposable`; `ReadAt`/`WriteAt` helpers; frees engine-allocated structs on the game thread. |
+
+Calling an arbitrary function through reflection is possible via `UFunction.Invoke` (raw parameter
+bytes), but the [generated SDK](/docs/guide/the-sdk) gives you friendly typed method wrappers for this —
+prefer those.
+
+## Threading: read anywhere, write on the game thread
+
+This is the rule that keeps your plugin from crashing the server:
+
+- **Reads are safe from any thread.** `Get`/`TryGet`, `FindFirstOf`, `FindAllOf` and array walks use a
+  fault-free memory primitive — a bad pointer returns `false`, never a crash.
+- **Writes and engine calls are game-thread-only.** `Set`/`TrySet`, invoking functions, spawning or
+  destroying actors, and loading assets all assert the [game thread](/docs/architecture#the-game-thread)
+  and throw if called from a background thread.
+
+Your `OnStart` and all [scope callbacks](/docs/guide/plugins#the-plugin-scope) already run on the game
+thread. When you're on a background thread, switch first:
+
+```csharp
+private async Task HealEveryone()
+{
+    await GameThread.SwitchTo();                       // now on the engine tick thread
+
+    foreach (UObject player in Unreal.FindAllOf("PalPlayerCharacter"))
+        player.Set<double>("Hp", 9999.0);
+}
+```
+
+or post a one-shot to the next tick with `GameThread.Post(() => …)`.
+
+<Callout type="warn">
+If [layout derivation](/docs/architecture#layout-derivation) failed, the runtime is **Disabled** and
+every `Unreal` call throws. This is intentional — Palforge refuses to read or write memory it could not
+prove. Check `Unreal.IsReady` if you need to degrade gracefully.
+</Callout>
+
+## Next steps
+
+<Cards>
+  <Card title="The generated SDK" href="/docs/guide/the-sdk" description="Typed classes, structs and enums instead of raw names and offsets." />
+  <Card title="Hooks" href="/docs/guide/hooks" description="Intercept the functions that mutate this state." />
+  <Card title="How Palforge works" href="/docs/architecture" description="Where these offsets come from and the game-thread model." />
+</Cards>

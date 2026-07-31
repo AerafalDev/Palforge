@@ -1,0 +1,207 @@
+---
+title: Commands
+description: Chat commands with arguments, groups, aliases, permissions and preconditions.
+---
+
+Palforge hooks the server's chat entry point and turns prefixed chat messages into method calls. You
+write a command as a method on a `ChatCommandModule`; the host discovers, binds and dispatches it — no
+manual registration.
+
+## A first command
+
+```csharp
+using Palforge.Commands.Attributes;
+using Palforge.Commands.Modules.Chat;
+
+public sealed class FunCommands : ChatCommandModule
+{
+    [Command("ping")]
+    [CommandDescription("Replies with pong.")]
+    public void Ping() => Reply("pong");
+}
+```
+
+With the default `!` [prefix](/docs/configuration#commands), a player types `!ping` and Palforge
+whispers `pong` back. When a command matches, the raw text is **not** broadcast to chat.
+
+<Callout type="info">
+The command prefix and the sender name shown on replies are configured in
+[`Configuration.cfg`](/docs/configuration#commands) under `[Commands]` (`Prefix`, `SenderName`). The
+default prefix is `!`.
+</Callout>
+
+## The command module
+
+Command methods live on a class deriving from `ChatCommandModule`, which gives you the context and three
+reply helpers. **A new module instance is created per invocation via DI**, so constructor injection
+works.
+
+| Helper | Sends |
+| --- | --- |
+| `Reply(message, args)` | A whisper to the caller only. |
+| `Broadcast(message, args)` | A global chat message to everyone. |
+| `Notify(message, args)` | A server-notice banner. |
+
+All three take a composite format string (`"{0}"`, `"{1}"`, …). The context exposes the caller:
+
+```csharp
+Context.Player          // PalPlayerController — the caller
+Context.PlayerState     // PalPlayerState? — Player.GetPalPlayerState()
+Context.IsAdministrator // bool — the player's admin flag
+Context.Input           // the original raw chat message
+```
+
+<Callout type="warn">
+A command method **must return `void`** and be an **instance method**. Reply through `Reply` /
+`Broadcast` / `Notify`, not a return value. (`private` command methods are fine — the binder finds them.)
+</Callout>
+
+## Arguments
+
+Method parameters become command arguments, converted from the chat text. Tokens split on whitespace,
+and double quotes group a token: `!tp "Some Player"` passes `Some Player` as one argument.
+
+```csharp
+[Command("give")]
+public void Give(string item, int count = 1)   // !give Sphere 5   (count optional → defaults to 1)
+{
+    Reply("Giving {0}x {1}.", count, item);
+}
+```
+
+Rules the binder enforces:
+
+- Each parameter type needs a registered [argument reader](#argument-readers).
+- **Optional parameters** (C# default values) are supported and must come last.
+- **`params` arrays** collect the remaining tokens.
+- A missing required argument, a conversion failure, or too many tokens produces a clear reply to the
+  caller (`Missing argument '…'`, `Argument '…': …`, `Too many arguments.`).
+
+### Capturing the rest of the line
+
+Mark the final `string` parameter `[CommandRemainder]` to capture everything after the command as one
+value:
+
+```csharp
+[Command("say")]
+public void Say([CommandRemainder] string message) => Notify("{0}", message);   // !say hello everyone
+```
+
+### Argument readers
+
+These types are supported out of the box:
+
+- `string`, and every `ISpanParsable<T>` primitive — `bool`, `int`, `long`, `float`, `double`,
+  `decimal`, `Guid`, `DateTime`, `TimeSpan`, and more (parsed with the invariant culture).
+- Any **enum** (case-insensitive by name).
+- **`Nullable<T>`** of any supported `T` (the literal `null` yields no value).
+- **`PalPlayerController`** — resolves an **online** player by exact, case-insensitive name.
+
+```csharp
+[Command("kick")]
+public void Kick(PalPlayerController target, [CommandRemainder] string reason = "No reason")
+{
+    Broadcast("{0} was kicked: {1}", target.GetPalPlayerState()?.PlayerNamePrivate, reason);
+}
+```
+
+To support a custom type, ship an `ArgumentReader<T>` in your plugin assembly — it's auto-discovered
+(with DI) and overrides the built-ins for that type:
+
+```csharp
+using Palforge.Commands.Arguments;
+using Palforge.Commands.Modules;
+
+public sealed class ItemReader : ArgumentReader<ItemId>
+{
+    public override bool TryRead(CommandContext context, ReadOnlySpan<char> input,
+        out ItemId value, out string? errorMessage)
+    {
+        // parse `input` → value, or set errorMessage and return false
+    }
+}
+```
+
+## Groups and aliases
+
+Group related commands under a prefix with `[CommandGroup]` on the class; add extra names with
+`[CommandAliases]` (on a method for command aliases, on a class for group aliases):
+
+```csharp
+[CommandGroup("admin")]
+[CommandAliases("a")]                       // group is "admin" or "a"
+public sealed class AdminCommands : ChatCommandModule
+{
+    [Command("teleport")]
+    [CommandAliases("tp")]                   // command is "teleport" or "tp"
+    [CommandDescription("Teleport to a named online player.")]
+    public void Teleport(PalPlayerController target)
+    {
+        // invoked as:  !admin teleport "Some Player"   (or  !a tp "Some Player")
+        Reply("Teleporting to {0}.", target.GetPalPlayerState()?.PlayerNamePrivate);
+    }
+}
+```
+
+Grouped commands are invoked as `<prefix><group> <command> <args…>`; ungrouped as
+`<prefix><command> <args…>`.
+
+## Permissions and preconditions
+
+### Permissions
+
+`[CommandPermissions(...)]` gates a command (or every command in a class) behind named permissions:
+
+```csharp
+[CommandPermissions("admin.teleport")]
+[Command("teleport")]
+public void Teleport(PalPlayerController target) { /* … */ }
+```
+
+By default, permission checks resolve to the player's **admin flag** — any named permission passes only
+for administrators. To implement real, granular permissions, register your own `PermissionProvider` in
+`ConfigureServices`:
+
+```csharp
+public sealed class MyPermissions : PermissionProvider
+{
+    public override bool HasPermission(CommandContext context, string permission)
+    {
+        // look up the player (context.Player) against your own roles/permissions
+    }
+}
+
+// in PluginConfiguration.ConfigureServices:
+services.AddSingleton<PermissionProvider, MyPermissions>();
+```
+
+### Custom preconditions
+
+For arbitrary gates, subclass `CommandPrecondition` (allowed on a method or class, multiple times) and
+return `PreconditionResult.Success` or `PreconditionResult.Fail("why")`. On failure, the message is sent
+to the caller and the command doesn't run:
+
+```csharp
+[AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
+public sealed class RequireOverworld : CommandPreconditionAttribute
+{
+    public override PreconditionResult Check(CommandContext context, IServiceProvider services)
+        => context.IsAdministrator
+            ? PreconditionResult.Success
+            : PreconditionResult.Fail("Admins only.");
+}
+```
+
+## Built-in admin commands
+
+Palforge itself registers a `plugin` command group (admin-only) for managing plugins live —
+`!plugin list`, `!plugin load <name>`, `!plugin reload <name>`, `!plugin unload <name>`. See
+[Unload and reload](/docs/guide/plugins#unload-and-reload).
+
+## Next steps
+
+<Cards>
+  <Card title="Hooks" href="/docs/guide/hooks" description="Intercept native engine functions before or after they run." />
+  <Card title="Live game state" href="/docs/guide/live-game-state" description="Read and write the game objects your commands act on." />
+  <Card title="Configuration" href="/docs/configuration" description="Set the command prefix and sender name." />
+</Cards>

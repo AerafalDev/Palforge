@@ -1,0 +1,207 @@
+---
+title: How Palforge works
+description: The boot sequence, runtime layout derivation, and the game-thread model.
+---
+
+Palforge turns an unmodifiable Unreal Engine 5.1 dedicated server into a .NET plugin host — without
+patching the executable and without baking in a single memory offset. This page explains how: how it
+boots, how it learns the game's object layout, and the threading model that keeps your code from
+crashing the server.
+
+## The two pieces
+
+Palforge is two assemblies with very different jobs:
+
+| Assembly | Output | Role |
+| --- | --- | --- |
+| `Palforge.Proxy` | `version.dll` (Native-AOT) | A DLL-proxy shim. The Windows loader loads it in place of the system `version.dll`; it forwards the real exports and boots the managed runtime. |
+| `Palforge` | `Palforge.dll` (managed, self-contained) | The runtime: layout derivation, reflection, the plugin host, hooks, commands, logging. |
+
+## The boot sequence
+
+<Steps>
+
+<Step>
+
+### The Windows loader loads `version.dll`
+
+Palforge's `version.dll` sits next to `PalServer-Win64-Shipping.exe`. Because Windows resolves a
+same-named DLL from the application directory before `System32`, the game loads Palforge's proxy. The
+proxy exports the 15 real `version.dll` functions (`GetFileVersionInfoW`, `VerQueryValueW`, …) as
+`[UnmanagedCallersOnly]` entry points, so the game keeps working normally.
+
+</Step>
+
+<Step>
+
+### The first export call triggers the bootstrap
+
+The first time the game calls any forwarded export, the proxy loads the **real** `version.dll` from
+`System32` (to forward to), then spawns a background thread to boot the managed runtime. The export
+call returns immediately, so the game is never blocked waiting on the CLR.
+
+</Step>
+
+<Step>
+
+### hostfxr loads the managed runtime
+
+On that background thread, the proxy uses [HostFxrSharp](https://github.com/AerafalDev/HostFxrSharp) to
+start .NET. If `Palforge\Core\hostfxr.dll` exists (the shipped self-contained layout) it uses that;
+otherwise it falls back to a machine-wide .NET install. It then loads `Palforge.dll` and calls its
+`[UnmanagedCallersOnly]` entry point.
+
+</Step>
+
+<Step>
+
+### The managed runtime arms itself
+
+`Palforge` reads [`Configuration.cfg`](/docs/configuration), sets up logging and the console, then
+resolves a handful of **anchors** in the game's memory by pattern-scanning: the global object array,
+the `FName` functions, the allocator, and `UGameEngine::Tick`. It installs a hook on `Tick` and enters
+the **Arming** state. Nothing is derived yet — the runtime is waiting for the game thread.
+
+</Step>
+
+<Step>
+
+### Warm-up and derivation on the game thread
+
+Once the engine is ticking and the object graph is populated, Palforge
+[derives the object layout](#layout-derivation) on the game thread, validates it, activates the
+generated SDK, and finally **starts your plugins**. From here the runtime is **Ready** and every
+engine tick drives Palforge's scheduler, watchers and hooks.
+
+</Step>
+
+</Steps>
+
+## Layout derivation
+
+Palworld's server is a shipping UE5.1 build with no symbols, and its struct layouts differ from stock
+UE. Palforge never hardcodes those offsets. Instead it **derives them from the live process** and only
+trusts a value it can prove.
+
+### Probes and the unanimity rule
+
+Derivation runs a chain of structural probes, each building on the last:
+
+```text
+ObjectArrayProbe → ObjectBaseProbe → StructProbe → PropertyProbe → FunctionProbe
+```
+
+Each probe *reasons about the shape of memory* rather than reading a fixed address. For example:
+
+- **ObjectArrayProbe** brute-forces the global object array's stride and item shape, accepting a
+  combination only when many sampled objects each store their own index where `UObjectBase.InternalIndex`
+  should be.
+- **ObjectBaseProbe** finds `ClassPrivate` as the pointer that mostly points at another object *and*
+  has exactly one fixed point (the class whose class is itself — `UClass`), then `NamePrivate`,
+  `OuterPrivate` and `ObjectFlags` by similar structural tests.
+- **PropertyProbe** anchors on structs whose layout is known a priori — `Vector{X,Y,Z}` at `0/8/16`,
+  `Guid{A,B,C,D}` at `0/4/8/12` — and walks their property lists to recover the `FProperty` field
+  offsets.
+
+Every candidate offset is passed through a **unanimity check**: it is accepted only if *all* the
+evidence agrees on exactly one value. Two disagreeing answers, or none, leave the member
+**undetermined** — never guessed.
+
+### Provenance and the fallback table
+
+Each offset records where it came from:
+
+| Provenance | Meaning |
+| --- | --- |
+| `Derived` | Proven against *this* build. Trusted. |
+| `Tabled` | Filled from the stock UE5.1 table because it could not be derived. Used, but flagged unverified. |
+| `Undetermined` / `NotAttempted` | No usable offset. |
+
+The stock UE5.1 table only fills genuine gaps — **a derived offset is never overwritten by the table**.
+If a derived value disagrees with the table, Palforge keeps the derived one and logs that the build is
+forked.
+
+### Validation, or fail closed
+
+Before the layout is accepted, Palforge proves it end-to-end: it walks the root chain
+`Object → Field → Struct → Class`, checks that `Object` has a null super and that
+`Object`'s class-default object is named exactly `Default__Object`, then fingerprints the verified
+table. If any of this fails, the runtime enters the **Disabled** state:
+
+<Callout type="warn">
+When derivation or validation fails, Palforge **disables reflection entirely** and logs it. Plugins that
+use `Unreal` will throw rather than read wrong memory. This is deliberate — a wrong offset in a live
+server process is far worse than a disabled feature.
+</Callout>
+
+## The game thread
+
+Palforge reads and writes the game's own memory because it runs *inside* the game process. That makes
+reads cheap, but it also means the engine's single game thread is sacred.
+
+### One thread, hard-enforced
+
+Palforge installs its work on `UGameEngine::Tick`, and the first tick marks that thread as *the* game
+thread. From then on:
+
+- **Reads are safe from any thread.** Every read goes through a fault-free memory primitive — a bad
+  pointer returns `false` instead of crashing — so you can inspect live objects from a background thread.
+- **Writes and engine calls are game-thread-only.** Writing a property, calling a `UFunction`
+  (`ProcessEvent`), allocating/freeing native memory, spawning or destroying actors, and loading assets
+  all assert the game thread and **throw** if called from anywhere else.
+
+### Getting onto the game thread
+
+Your `OnStart` already runs on the game thread (plugins start from inside the derivation callback). When
+you are on a background thread — a timer, a `Task`, an incoming network callback — hop over first:
+
+```csharp
+await GameThread.SwitchTo();   // continues on the engine tick thread
+actor.Set<double>("Hp", 9999.0);
+```
+
+Or post a one-shot action to the next tick:
+
+```csharp
+GameThread.Post(() => actor.Set<double>("Hp", 9999.0));
+```
+
+The [plugin scope](/docs/guide/plugins#the-plugin-scope) also gives you tick- and time-based scheduling
+(`OnTick`, `Every`, `After`) that already runs on the game thread, so most plugins never touch
+`GameThread` directly. Exceptions thrown on the game thread by your callbacks are caught and logged, so
+one buggy handler cannot take down the server.
+
+## Runtime states
+
+The runtime moves through three states, and reflection is only available in one:
+
+| State | Meaning |
+| --- | --- |
+| `Arming` | Booted, anchors resolved, waiting on the game thread to derive the layout. Reflection unavailable. |
+| `Ready` | Layout derived and validated, SDK active, plugins started. Reflection available. |
+| `Disabled` | Derivation or validation failed. Reflection throws; the server keeps running normally otherwise. |
+
+## On-disk layout
+
+Everything Palforge uses lives under a `Palforge` folder next to the server executable:
+
+```text
+…\PalServer\Pal\Binaries\Win64\
+├─ version.dll                 Palforge proxy
+└─ Palforge\
+   ├─ Configuration.cfg        runtime configuration (required)
+   ├─ Core\                    the managed runtime + bundled .NET (self-contained)
+   ├─ Logs\                    Palforge-<date>.log and <Plugin>-<date>.log
+   ├─ Plugins\                 one folder per plugin
+   ├─ Sdk\                     generated SDK output (when enabled)
+   └─ Dumps\                   drop a '.dump' file to trigger a reflection dump
+```
+
+## Next steps
+
+<Cards>
+  <Card title="Configuration" href="/docs/configuration" description="Every Configuration.cfg key and what it does." />
+  <Card title="Plugins" href="/docs/guide/plugins" description="The plugin lifecycle, DI, and the plugin scope." />
+  <Card title="Live game state" href="/docs/guide/live-game-state" description="The reflection API and the game-thread rules in practice." />
+  <Card title="The generated SDK" href="/docs/guide/the-sdk" description="How typed game classes bridge to the engine at runtime." />
+</Cards>
