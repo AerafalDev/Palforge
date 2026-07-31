@@ -6,11 +6,11 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <IsPackable>false</IsPackable>
     <EnableDynamicLoading>true</EnableDynamicLoading>
-    <PalforgePluginDeployDirectory>C:\Program Files (x86)\Steam\steamapps\common\PalServer\Pal\Binaries\Win64</PalforgePluginDeployDirectory>
+    <PalforgePluginDeployDirectory>PALFORGE_DEPLOY_DIRECTORY</PalforgePluginDeployDirectory>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Palforge" Version="1.0.0" ExcludeAssets="runtime" />
+    <PackageReference Include="Palforge" Version="PALFORGE_VERSION" ExcludeAssets="runtime" />
   </ItemGroup>
 
   <ItemGroup>

@@ -11,5 +11,21 @@
         "type": "project"
     },
     "sourceName": "MyPlugin",
-    "preferNameDirectory": true
+    "preferNameDirectory": true,
+    "symbols": {
+        "PalforgeVersion": {
+            "type": "parameter",
+            "datatype": "string",
+            "defaultValue": "1.0.0",
+            "replaces": "PALFORGE_VERSION",
+            "description": "The version of the Palforge package to reference."
+        },
+        "DeployDirectory": {
+            "type": "parameter",
+            "datatype": "string",
+            "defaultValue": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\PalServer\\Pal\\Binaries\\Win64",
+            "replaces": "PALFORGE_DEPLOY_DIRECTORY",
+            "description": "A server's Pal\\Binaries\\Win64. Set it and a build deploys the plugin there; leave it empty and the build simply does not deploy."
+        }
+    }
 }
