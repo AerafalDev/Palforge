@@ -6,11 +6,11 @@ namespace MyPlugin;
 [Plugin("com.exemple.exempleplugin")]
 public sealed class MyPlugin : Plugin
 {
-    public override void OnStart()
+    protected override void OnStart()
     {
     }
 
-    public override void OnStop()
+    protected override void OnStop()
     {
     }
 }
