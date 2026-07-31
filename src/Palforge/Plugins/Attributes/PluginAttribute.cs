@@ -1,6 +1,6 @@
 ﻿namespace Palforge.Plugins.Attributes;
 
-[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+[AttributeUsage(AttributeTargets.Class, Inherited = false)]
 public sealed class PluginAttribute : Attribute
 {
     public string Id { get; }
