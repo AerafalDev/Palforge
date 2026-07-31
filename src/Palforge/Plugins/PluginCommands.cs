@@ -16,7 +16,8 @@ internal sealed class PluginCommands : ChatCommandModule
         _plugins = plugins;
     }
 
-    [Command("list"), CommandDescription("List the loaded plugins")]
+    [Command("list")]
+    [CommandDescription("List the loaded plugins")]
     public void List()
     {
         var plugins = _plugins.List();
@@ -33,7 +34,8 @@ internal sealed class PluginCommands : ChatCommandModule
             Reply($"- {plugin.Name} v{plugin.Version} [{plugin.Id}]");
     }
 
-    [Command("load"), CommandDescription("Load a plugin by its folder name")]
+    [Command("load")]
+    [CommandDescription("Load a plugin by its folder name")]
     public void Load(string name)
     {
         Reply(_plugins.Load(name)
@@ -41,13 +43,15 @@ internal sealed class PluginCommands : ChatCommandModule
             : $"Could not load '{name}' — already loaded, not found, or it failed to start (see the log).");
     }
 
-    [Command("unload"), CommandDescription("Unload a plugin by id or name")]
+    [Command("unload")]
+    [CommandDescription("Unload a plugin by id or name")]
     public void Unload(string plugin)
     {
         Reply(_plugins.Unload(plugin) ? $"Unloaded '{plugin}'." : $"No plugin '{plugin}'.");
     }
 
-    [Command("reload"), CommandDescription("Reload a plugin by id or name")]
+    [Command("reload")]
+    [CommandDescription("Reload a plugin by id or name")]
     public void Reload(string plugin)
     {
         Reply(_plugins.Reload(plugin) ? $"Reloaded '{plugin}'." : $"No plugin '{plugin}'.");
