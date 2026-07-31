@@ -3,17 +3,26 @@ name: Release
 on:
     push:
         tags: ["v*"]
+    workflow_dispatch:
+        inputs:
+            tag:
+                description: "Existing tag to release (e.g. v1.2.3)."
+                required: true
+                type: string
 
 permissions:
     contents: write
 
 concurrency:
-    group: ${{ github.workflow }}-${{ github.ref }}
+    group: ${{ github.workflow }}-${{ inputs.tag || github.ref_name }}
     cancel-in-progress: true
 
 jobs:
     bundle:
         runs-on: windows-latest
+
+        env:
+            RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
 
         strategy:
             fail-fast: false
@@ -28,6 +37,7 @@ jobs:
             - uses: actions/checkout@v7
               with:
                   fetch-depth: 0
+                  ref: ${{ inputs.tag || github.ref_name }}
 
             - name: Setup .NET
               uses: actions/setup-dotnet@v6
@@ -56,10 +66,11 @@ jobs:
 
             - name: Zip
               shell: pwsh
-              run: Compress-Archive -Path "bundle/Win64/*" -DestinationPath "Palforge-${{ github.ref_name }}-win-x64${{ matrix.suffix }}.zip"
+              run: Compress-Archive -Path "bundle/Win64/*" -DestinationPath "Palforge-${{ env.RELEASE_TAG }}-win-x64${{ matrix.suffix }}.zip"
 
             - name: Attach to the GitHub release
               uses: softprops/action-gh-release@v3
               with:
-                  files: Palforge-${{ github.ref_name }}-win-x64${{ matrix.suffix }}.zip
+                  tag_name: ${{ env.RELEASE_TAG }}
+                  files: Palforge-${{ env.RELEASE_TAG }}-win-x64${{ matrix.suffix }}.zip
                   generate_release_notes: true
