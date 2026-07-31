@@ -1,0 +1,94 @@
+---
+title: Introduction
+description: A clean-room .NET 10 modding runtime for Palworld dedicated servers.
+---
+
+**Palforge** is a clean-room **.NET 10 modding runtime for Palworld dedicated servers**. It runs
+in-process inside the Windows server (`PalServer-Win64-Shipping.exe`) and lets you write plugins in
+plain C# — [hook native engine functions](/docs/guide/hooks), [add chat commands](/docs/guide/commands),
+and [read and write live game state](/docs/guide/live-game-state) against a
+[typed, generated SDK](/docs/guide/the-sdk).
+
+Palworld's server is an unmodifiable, stripped Unreal Engine 5.1 binary: no scripting, no plugin API,
+and every internal memory layout changes from build to build. Palforge bridges that gap without ever
+baking in an offset — it **derives the engine's object layout from the running process** and refuses to
+serve a single offset it could not prove. On top of that sits a modern .NET host: dependency injection,
+structured logging, hot-reloadable plugins, and a Discord.NET-shaped command framework.
+
+## Why Palforge
+
+- **No baked offsets.** Every `UObject`/`UClass`/`FProperty` offset is
+  [derived at runtime](/docs/architecture#layout-derivation) by pattern-matching the live object graph,
+  cross-checked so that all evidence must agree, and validated end-to-end before any plugin runs. If it
+  cannot prove the layout, reflection is disabled rather than reading wrong memory.
+- **Game-thread safe.** Palforge installs itself on the engine tick and gives you a real
+  [game-thread model](/docs/architecture#the-game-thread) (`await GameThread.SwitchTo()`), so your writes
+  and engine calls never race the game and crash the server.
+- **A modern .NET host.** Plugins are ordinary .NET assemblies with constructor injection, per-plugin
+  configuration and logging, loaded into collectible `AssemblyLoadContext`s so they can be
+  [loaded, unloaded and reloaded](/docs/guide/plugins#unload-and-reload) live.
+- **Typed access to the whole game.** A [generated SDK](/docs/guide/the-sdk) mirrors Palworld's classes,
+  structs and enums as C# types, so you call `player.BAdmin` or `Spawn(...)` instead of juggling raw
+  pointers.
+
+## How it works
+
+Palforge ships as a `version.dll` proxy dropped next to the server executable. The Windows loader loads
+it, it boots a managed runtime through the native .NET host, derives the layout on the game thread, and
+loads your plugins:
+
+```text
+PalServer-Win64-Shipping.exe
+      │  loads
+      ▼
+version.dll  (Palforge.Proxy — Native-AOT shim; forwards the real version.dll exports)
+      │  hostfxr
+      ▼
+Palforge  (managed runtime)
+      ├─ derives the UObject / UClass / FProperty layout from the running process
+      ├─ installs on UGameEngine::Tick — the game thread
+      └─ loads Palforge\Plugins\*  →  one collectible ALC per plugin
+```
+
+See [How Palforge works](/docs/architecture) for the full boot sequence and the safety model.
+
+## A plugin at a glance
+
+A plugin derives from `Plugin`. Once the host has attached it, `Log`, `Unreal`, `Scope` and `Services`
+are live:
+
+```csharp
+using Palforge.Plugins;
+using Palforge.Plugins.Attributes;
+
+namespace HelloPlugin;
+
+[Plugin("com.example.hello")]
+public sealed class HelloPlugin : Plugin
+{
+    protected override void OnStart()
+    {
+        Log.LogInformation("Hello from Palforge!");
+
+        // React to the world loading, then greet every player who spawns.
+        Scope.OnMapLoaded(_ => Log.LogInformation("Map loaded"));
+        Scope.OnNewObject("PalPlayerCharacter", player =>
+            Log.LogInformation("Player spawned: {Name}", player.Name));
+    }
+}
+```
+
+<Callout type="info">
+The fastest way to start a plugin is the `dotnet new` template — see
+[Getting started](/docs/getting-started). It scaffolds the project, references Palforge, and deploys to
+your server on build.
+</Callout>
+
+## Next steps
+
+<Cards>
+  <Card title="Getting started" href="/docs/getting-started" description="Install the template, scaffold a plugin, and deploy it to your server." />
+  <Card title="How Palforge works" href="/docs/architecture" description="The boot sequence, runtime layout derivation, and the game-thread model." />
+  <Card title="Plugins" href="/docs/guide/plugins" description="Lifecycle, dependency injection, the plugin scope, and hot reload." />
+  <Card title="Live game state" href="/docs/guide/live-game-state" description="Find, read and write live game objects through UnrealApi." />
+</Cards>

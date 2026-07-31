@@ -1,0 +1,10 @@
+{
+  "title": "Guide",
+  "pages": [
+    "plugins",
+    "commands",
+    "hooks",
+    "live-game-state",
+    "the-sdk"
+  ]
+}

@@ -1,0 +1,183 @@
+---
+title: Getting started
+description: Install the Palforge template, scaffold a plugin, and deploy it to your server.
+---
+
+This page takes you from nothing to a running plugin: install the template, scaffold a project, write
+a little behaviour, and deploy it to your Palworld dedicated server.
+
+If you want the bigger picture first, read [How Palforge works](/docs/architecture). Otherwise, start
+here.
+
+## Prerequisites
+
+| Requirement | Notes |
+| --- | --- |
+| .NET 10 SDK | Plugins target `net10.0`. The SDK builds them; the runtime is shipped inside Palforge itself. |
+| Windows x64 | Palforge runs in-process inside the Windows dedicated server. Plugins are Windows/x64. |
+| A Palworld dedicated server | With Palforge installed — its `version.dll` sits next to `PalServer-Win64-Shipping.exe`. |
+
+<Callout type="info">
+Palforge is **self-contained**: the shipped build bundles its own .NET runtime under `Palforge\Core`, so
+the server machine does not need a machine-wide .NET install. You only need the .NET 10 **SDK** on the
+machine where you *build* plugins.
+</Callout>
+
+## Install Palforge on the server
+
+Palforge is delivered as a release bundle you unpack into your server's `Win64` directory. After
+installing, the layout looks like this:
+
+```text
+…\PalServer\Pal\Binaries\Win64\
+├─ PalServer-Win64-Shipping.exe
+├─ version.dll                 ← Palforge proxy
+└─ Palforge\
+   ├─ Configuration.cfg        ← runtime configuration
+   ├─ Core\                    ← the managed runtime (self-contained)
+   ├─ Logs\
+   └─ Plugins\                 ← your plugins go here, one folder each
+```
+
+Start the server once with Palforge installed; you should see a **Palforge Dedicated Server** console
+and a `Palforge\Logs\Palforge-<date>.log` file. See [Configuration](/docs/configuration) for the console
+and logging options.
+
+## Scaffold a plugin
+
+Install the template package, then create a plugin project from it:
+
+<Steps>
+
+<Step>
+
+### Install the template
+
+```sh
+dotnet new install Palforge.Templates
+```
+
+</Step>
+
+<Step>
+
+### Create a plugin
+
+Scaffold a new plugin. Point `--DeployDirectory` at your server's `Win64` folder and every build will
+deploy the plugin there automatically:
+
+```sh
+dotnet new palforge-plugin -n MyPlugin \
+  --DeployDirectory "C:\Program Files (x86)\Steam\steamapps\common\PalServer\Pal\Binaries\Win64"
+```
+
+The template creates a project that references Palforge **compile-only** (the runtime lives on the
+server), plus an optional configuration file:
+
+```text
+MyPlugin/
+├─ MyPlugin.csproj              references Palforge (ExcludeAssets=runtime)
+├─ MyPlugin.cs                  your Plugin subclass
+├─ MyPluginConfiguration.cs     optional: register services / bind config
+└─ MyPlugin.cfg                 optional: per-plugin INI settings
+```
+
+</Step>
+
+<Step>
+
+### Build and deploy
+
+```sh
+dotnet build ./MyPlugin
+```
+
+Because you set `--DeployDirectory`, the build copies the output into
+`…\Win64\Palforge\Plugins\MyPlugin`. Leave the deploy directory empty and the build simply produces the
+plugin without deploying — you can copy it yourself.
+
+</Step>
+
+</Steps>
+
+<Callout type="info">
+The plugin's folder name, its assembly name, and its `.cfg` file must all match (`MyPlugin` →
+`MyPlugin.dll` + `MyPlugin.cfg`). Palforge discovers a plugin by looking for
+`Plugins\<Name>\<Name>.dll`. See [Plugins](/docs/guide/plugins#discovery).
+</Callout>
+
+## Write your first plugin
+
+The scaffolded `MyPlugin.cs` is an empty `Plugin`. Fill in `OnStart`:
+
+```csharp
+using Microsoft.Extensions.Logging;
+using Palforge.Plugins;
+using Palforge.Plugins.Attributes;
+
+namespace MyPlugin;
+
+[Plugin("com.example.myplugin", Name = "My Plugin", Author = "you", Version = "1.0.0")]
+public sealed class MyPlugin : Plugin
+{
+    protected override void OnStart()
+    {
+        Log.LogInformation("MyPlugin started");
+
+        // Announce every player as they spawn into the world.
+        Scope.OnNewObject("PalPlayerCharacter", player =>
+            Log.LogInformation("Player spawned: {Name}", player.Name));
+    }
+
+    protected override void OnStop()
+    {
+        Log.LogInformation("MyPlugin stopped");
+    }
+}
+```
+
+Add a chat command by dropping a `ChatCommandModule` into the same assembly — the host discovers and
+binds it automatically:
+
+```csharp
+using Palforge.Commands.Attributes;
+using Palforge.Commands.Modules.Chat;
+
+public sealed class FunCommands : ChatCommandModule
+{
+    [Command("ping")]
+    [CommandDescription("Replies with pong.")]
+    public void Ping() => Reply("pong");
+}
+```
+
+With the default `!` prefix, a player types `!ping` in chat and Palforge whispers `pong` back. See
+[Commands](/docs/guide/commands) for arguments, groups, permissions and more.
+
+## Manage plugins at runtime
+
+Palforge registers a built-in admin command group. From in-game chat (as an admin), you can list and
+hot-reload plugins without restarting the server:
+
+```text
+!plugin list
+!plugin load MyPlugin
+!plugin reload MyPlugin
+!plugin unload MyPlugin
+```
+
+<Callout type="warn">
+For a clean unload, stop anything you started outside the [plugin scope](/docs/guide/plugins#the-plugin-scope)
+(your own threads or tasks) in `OnStop`. The plugin's `AssemblyLoadContext` is collectible, and Palforge
+verifies it is actually collected after unload — a leaked reference keeps the old code alive. See
+[Unload and reload](/docs/guide/plugins#unload-and-reload).
+</Callout>
+
+## Next steps
+
+<Cards>
+  <Card title="Plugins" href="/docs/guide/plugins" description="Lifecycle, DI, the plugin scope, per-plugin config, and hot reload." />
+  <Card title="Commands" href="/docs/guide/commands" description="Chat commands with arguments, groups, permissions and preconditions." />
+  <Card title="Hooks" href="/docs/guide/hooks" description="Intercept native engine functions before or after they run." />
+  <Card title="Live game state" href="/docs/guide/live-game-state" description="Find, read and write live game objects." />
+</Cards>
