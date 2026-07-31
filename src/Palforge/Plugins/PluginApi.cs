@@ -10,11 +10,13 @@ using Palforge.Commands.Attributes;
 using Palforge.Commands.Options;
 using Palforge.Extensions;
 using Palforge.Hooks;
+using Palforge.Hosting.Logging;
 using Palforge.Hosting.Options;
 using Palforge.Plugins.Watchers;
 using Palforge.Unreal;
 using Palforge.Unreal.Runtime;
 using Serilog;
+using Serilog.Events;
 
 namespace Palforge.Plugins;
 
@@ -41,6 +43,7 @@ internal sealed class PluginApi : IDisposable
         ArgumentNullException.ThrowIfNull(loggers);
         ArgumentNullException.ThrowIfNull(debugOptions);
         ArgumentNullException.ThrowIfNull(commandOptions);
+
         _log = log;
         _loggers = loggers;
         _debugOptions = debugOptions;
@@ -265,10 +268,11 @@ internal sealed class PluginApi : IDisposable
         var api = new UnrealApi(runtime);
         var configuration = ReadConfiguration(name, directory);
 
-        var loggers = LoggerFactory.Create(static builder => builder.AddSerilog(dispose: false));
-        var scope = new PluginScope(name, runtime, api, objects, worlds, loggers.CreateLogger(name));
+        var loggerFilePath = Path.Combine(Path.PalforgeLogsDirectory, $"{name}-.log");
+        var loggerFactory = LoggerFactory.Create(builder => builder.ClearProviders().AddSerilog(LoggingConfiguration.ConfigureLogger(LogEventLevel.Debug, loggerFilePath)));
+        var scope = new PluginScope(name, runtime, api, objects, worlds, loggerFactory.CreateLogger(name));
 
-        services.AddSingleton(loggers);
+        services.AddSingleton(loggerFactory);
         services.AddLogging();
         services.AddSingleton(api);
         services.AddSingleton(scope);
@@ -281,14 +285,14 @@ internal sealed class PluginApi : IDisposable
         var provider = services.BuildServiceProvider();
         var instance = (Plugin)provider.GetRequiredService(type);
 
-        instance.Attach(new PluginServices(loggers.CreateLogger(type.FullName ?? name), api, scope, provider));
+        instance.Attach(new PluginServices(loggerFactory.CreateLogger(type.FullName ?? name), api, scope, provider));
 
-        var hooks = HookApi.Attach(assembly, provider, api, scope, loggers.CreateLogger(name));
+        var hooks = HookApi.Attach(assembly, provider, api, scope, loggerFactory.CreateLogger(name));
 
         if (hooks > 0)
             _log.LogInformation("Plugin {Plugin}: {Hooks} hook(s) attached", name, hooks);
 
-        var commands = PluginCommandBinder.Attach(assembly, provider, api, scope, _commands!, metadata.Id, loggers.CreateLogger(name));
+        var commands = PluginCommandBinder.Attach(assembly, provider, api, scope, _commands!, metadata.Id, loggerFactory.CreateLogger(name));
 
         if (commands > 0)
             _log.LogInformation("Plugin {Plugin}: {Commands} command(s) registered", name, commands);
