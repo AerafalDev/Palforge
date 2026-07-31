@@ -1,0 +1,15 @@
+{
+    "$schema": "https://json.schemastore.org/template",
+    "author": "Aerafal",
+    "classifications": [ "Palworld", "Server", "Plugin", "Modding" ],
+    "identity": "Palforge.Plugin.CSharp",
+    "name": "Palforge server plugin",
+    "description": "A Palworld dedicated-server plugin: a typed hook, live-game reads, options, and deploy-on-build — referencing Palforge compile-only.",
+    "shortName": "palforge-plugin",
+    "tags": {
+        "language": "C#",
+        "type": "project"
+    },
+    "sourceName": "MyPlugin",
+    "preferNameDirectory": true
+}

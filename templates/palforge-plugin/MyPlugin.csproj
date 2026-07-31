@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+    <PalforgePluginDeployDirectory>C:\Program Files (x86)\Steam\steamapps\common\PalServer\Pal\Binaries\Win64</PalforgePluginDeployDirectory>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Palforge" Version="1.0.0" ExcludeAssets="runtime" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="MyPlugin.cfg" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <Target Name="DeployPalforgePlugin"
+          AfterTargets="Build"
+          Condition="'$(PalforgePluginDeployDirectory)' != '' and Exists('$(PalforgePluginDeployDirectory)')">
+
+    <PropertyGroup>
+      <_PluginDirectory>$(PalforgePluginDeployDirectory)\Palforge\Plugins\$(AssemblyName)</_PluginDirectory>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_PluginFiles Include="$(TargetDir)**\*.*" />
+    </ItemGroup>
+
+    <MakeDir Directories="$(_PluginDirectory)" Condition="!Exists('$(_PluginDirectory)')" />
+
+    <Copy SourceFiles="@(_PluginFiles)"
+          DestinationFiles="@(_PluginFiles->'$(_PluginDirectory)\%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true"
+          OverwriteReadOnlyFiles="true" />
+
+    <Message Importance="high" Text="Palforge -> deployed plugin '$(AssemblyName)' to $(_PluginDirectory)" />
+  </Target>
+
+</Project>
