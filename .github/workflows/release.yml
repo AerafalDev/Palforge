@@ -40,7 +40,7 @@ jobs:
 
                   Copy-Item "publish/proxy/version.dll" "$win64/version.dll"
                   Copy-Item "publish/core/*" "$palforge/Core" -Recurse -Force
-                  Copy-Item "src/Palforge/Resources/Configuration/Configuration.toml" "$palforge/Configuration.toml"
+                  Copy-Item "src/Palforge/Resources/Configuration/Configuration.cfg" "$palforge/Configuration.cfg"
 
                   Set-Content "$palforge/Logs/.keep" ""
                   Set-Content "$palforge/Plugins/README.txt" "Place each plugin in its own folder here: Plugins\<Name>\<Name>.dll (with its <Name>.cfg beside it)."
