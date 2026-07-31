@@ -1,11 +1,13 @@
 ﻿using System.Globalization;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Palforge.Commands.Options;
 using Palforge.Extensions;
 using Palforge.Hosting.Console;
 using Palforge.Hosting.Logging;
 using Palforge.Hosting.Options;
+using Palforge.Plugins;
+using Palforge.Unreal.Runtime;
 using Serilog;
 using Serilog.Sinks.SystemConsole.Themes;
 using ILogger = Serilog.ILogger;
@@ -17,8 +19,6 @@ internal static class PalforgeApplication
     private const string Template = "[{Timestamp:HH:mm:ss}] [{Level:u3}] {Source}: {Message:l}{NewLine}{Exception}";
 
     private const int RetainedDays = 14;
-
-    private static ServiceProvider? _services;
 
     public static void Start()
     {
@@ -32,13 +32,19 @@ internal static class PalforgeApplication
         if (debugOptions.EnableConsole)
             ConsoleForwarder.CreateConsole();
 
-        _services = new ServiceCollection()
-            .AddLogging(x => x.ClearProviders().AddSerilog(ConfigureLogger(debugOptions), true))
-            .AddSingleton<IConfiguration>(configuration)
-            .AddSingleton(debugOptions)
-            .BuildServiceProvider();
+        var loggerFactory = LoggerFactory.Create(x => x.ClearProviders().AddSerilog(ConfigureLogger(debugOptions), true));
 
-        AppDomain.CurrentDomain.ProcessExit += (_, _) => _services?.Dispose();
+        var commandOptions = configuration.GetSection(CommandOptions.SectionName).Get<CommandOptions>()!;
+
+        var plugins = new PluginApi(loggerFactory.CreateLogger<PluginApi>(), loggerFactory, debugOptions, commandOptions);
+
+        var runtimeOptions = configuration.GetSection(UnrealRuntimeOptions.SectionName).Get<UnrealRuntimeOptions>()!;
+
+        var bootstrap = new UnrealBootstrap(loggerFactory.CreateLogger<UnrealBootstrap>(), runtimeOptions, plugins);
+
+        var runtime = bootstrap.Start();
+
+        GC.KeepAlive(runtime);
     }
 
     private static ILogger ConfigureLogger(DebugOptions debugOptions)
