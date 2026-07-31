@@ -15,6 +15,15 @@ jobs:
     bundle:
         runs-on: windows-latest
 
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - configuration: Release
+                      suffix: ""
+                    - configuration: Debug
+                      suffix: "-debug"
+
         steps:
             - uses: actions/checkout@v7
               with:
@@ -26,10 +35,10 @@ jobs:
                   dotnet-version: 10.0.x
 
             - name: Publish proxy
-              run: dotnet publish src/Palforge.Proxy/Palforge.Proxy.csproj --configuration Release --runtime win-x64 --output publish/proxy
+              run: dotnet publish src/Palforge.Proxy/Palforge.Proxy.csproj --configuration ${{ matrix.configuration }} --runtime win-x64 --output publish/proxy
 
             - name: Publish runtime
-              run: dotnet publish src/Palforge/Palforge.csproj --configuration Release --runtime win-x64 --self-contained true -p:EnableDynamicLoading=true -p:UseAppHost=false --output publish/core
+              run: dotnet publish src/Palforge/Palforge.csproj --configuration ${{ matrix.configuration }} --runtime win-x64 --self-contained true -p:EnableDynamicLoading=true -p:UseAppHost=false --output publish/core
 
             - name: Assemble server bundle
               shell: pwsh
@@ -47,10 +56,10 @@ jobs:
 
             - name: Zip
               shell: pwsh
-              run: Compress-Archive -Path "bundle/Win64/*" -DestinationPath "Palforge-${{ github.ref_name }}-win-x64.zip"
+              run: Compress-Archive -Path "bundle/Win64/*" -DestinationPath "Palforge-${{ github.ref_name }}-win-x64${{ matrix.suffix }}.zip"
 
             - name: Attach to the GitHub release
               uses: softprops/action-gh-release@v3
               with:
-                  files: Palforge-${{ github.ref_name }}-win-x64.zip
+                  files: Palforge-${{ github.ref_name }}-win-x64${{ matrix.suffix }}.zip
                   generate_release_notes: true
