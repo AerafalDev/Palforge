@@ -1,4 +1,5 @@
-﻿using Palforge.Commands.Modules;
+﻿using System.Globalization;
+using Palforge.Commands.Modules;
 using Palforge.Sdk.Script.Pal;
 using Palforge.Unreal;
 
@@ -19,7 +20,36 @@ internal sealed class PlayerArgumentReader : ArgumentReader<PalPlayerController>
 
         foreach (var controller in _unreal.FindAll<PalPlayerController>())
         {
-            if (controller.GetPalPlayerState() is { } state && string.Equals(state.PlayerNamePrivate, name, StringComparison.OrdinalIgnoreCase))
+            if (controller.GetPalPlayerState() is not { } state)
+                continue;
+
+            // NumericId
+            if (int.TryParse(name, out var numericId) && state.PlayerId == numericId)
+            {
+                value = controller;
+                errorMessage = null;
+                return true;
+            }
+
+            // PlatformUserId
+            if (PalOnlineUtility.GetUserIdByPlayerUIdInSession(controller, state.PlayerUId, out var userId) && string.Equals(userId, name, StringComparison.OrdinalIgnoreCase))
+            {
+                value = controller;
+                errorMessage = null;
+                return true;
+            }
+
+            // PlayerUId
+            if (string.Equals(name, state.PlayerUId.A.ToString("x8", CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(name, state.PlayerUId.A.ToString(CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase))
+            {
+                value = controller;
+                errorMessage = null;
+                return true;
+            }
+
+            // PlayerName
+            if (string.Equals(state.PlayerNamePrivate, name, StringComparison.OrdinalIgnoreCase))
             {
                 value = controller;
                 errorMessage = null;
