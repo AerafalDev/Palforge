@@ -23,14 +23,6 @@ internal sealed class PlayerArgumentReader : ArgumentReader<PalPlayerController>
             if (controller.GetPalPlayerState() is not { } state)
                 continue;
 
-            // NumericId
-            if (int.TryParse(name, out var numericId) && state.PlayerId == numericId)
-            {
-                value = controller;
-                errorMessage = null;
-                return true;
-            }
-
             // PlatformUserId
             if (PalOnlineUtility.GetUserIdByPlayerUIdInSession(controller, state.PlayerUId, out var userId) && string.Equals(userId, name, StringComparison.OrdinalIgnoreCase))
             {
@@ -40,8 +32,15 @@ internal sealed class PlayerArgumentReader : ArgumentReader<PalPlayerController>
             }
 
             // PlayerUId
-            if (string.Equals(name, state.PlayerUId.A.ToString("x8", CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(name, state.PlayerUId.A.ToString(CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(name, state.PlayerUId.ToString(), StringComparison.OrdinalIgnoreCase))
+            {
+                value = controller;
+                errorMessage = null;
+                return true;
+            }
+
+            // NumericId
+            if (int.TryParse(name, out var numericId) && state.PlayerId == numericId)
             {
                 value = controller;
                 errorMessage = null;
