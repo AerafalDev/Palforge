@@ -34,14 +34,14 @@ public class ConstantQNRT : Palforge.Sdk.Script.AudioSynesthesia.AudioSynesthesi
 
     public void GetNormalizedChannelConstantQAtTime(float inSeconds, int inChannel, out float[] outConstantQ)
     {
-        var arguments = new byte[][] { Bytes(inSeconds), Bytes(inChannel), Bytes<nint>(0) };
+        var arguments = new byte[][] { Bytes(inSeconds), Bytes(inChannel), new byte[16] };
         Call("GetNormalizedChannelConstantQAtTime", arguments, out var outputs);
         outConstantQ = SdkEnv.Values<float>(outputs[2]);
     }
 
     public void GetChannelConstantQAtTime(float inSeconds, int inChannel, out float[] outConstantQ)
     {
-        var arguments = new byte[][] { Bytes(inSeconds), Bytes(inChannel), Bytes<nint>(0) };
+        var arguments = new byte[][] { Bytes(inSeconds), Bytes(inChannel), new byte[16] };
         Call("GetChannelConstantQAtTime", arguments, out var outputs);
         outConstantQ = SdkEnv.Values<float>(outputs[2]);
     }

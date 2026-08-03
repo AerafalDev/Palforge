@@ -983,14 +983,14 @@ public class PrimitiveComponent : Palforge.Sdk.Script.Engine.SceneComponent
 
     public void GetOverlappingComponents(out Palforge.Sdk.Script.Engine.PrimitiveComponent[] outOverlappingComponents)
     {
-        var arguments = new byte[][] { Bytes<nint>(0) };
+        var arguments = new byte[][] { new byte[16] };
         Call("GetOverlappingComponents", arguments, out var outputs);
         outOverlappingComponents = SdkEnv.Objects<Palforge.Sdk.Script.Engine.PrimitiveComponent>(outputs[0]);
     }
 
     public void GetOverlappingActors(out Palforge.Sdk.Script.Engine.Actor[] overlappingActors, UObject? classFilter)
     {
-        var arguments = new byte[][] { Bytes<nint>(0), Bytes<nint>(classFilter?.Address ?? 0) };
+        var arguments = new byte[][] { new byte[16], Bytes<nint>(classFilter?.Address ?? 0) };
         Call("GetOverlappingActors", arguments, out var outputs);
         overlappingActors = SdkEnv.Objects<Palforge.Sdk.Script.Engine.Actor>(outputs[0]);
     }

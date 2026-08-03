@@ -39,6 +39,11 @@ public class Guid : UStructValue
     {
     }
 
+    public override string ToString()
+    {
+        return $"{A:X8}{B:X8}{C:X8}{D:X8}";
+    }
+
     public static Guid? Allocate()
     {
         return SdkEnv.AllocateStruct<Guid>("Guid");

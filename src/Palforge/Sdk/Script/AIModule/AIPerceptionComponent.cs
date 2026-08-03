@@ -58,35 +58,35 @@ public class AIPerceptionComponent : Palforge.Sdk.Script.Engine.ActorComponent
 
     public void GetPerceivedHostileActorsBySense(UObject? senseToUse, out Palforge.Sdk.Script.Engine.Actor[] outActors)
     {
-        var arguments = new byte[][] { Bytes<nint>(senseToUse?.Address ?? 0), Bytes<nint>(0) };
+        var arguments = new byte[][] { Bytes<nint>(senseToUse?.Address ?? 0), new byte[16] };
         Call("GetPerceivedHostileActorsBySense", arguments, out var outputs);
         outActors = SdkEnv.Objects<Palforge.Sdk.Script.Engine.Actor>(outputs[1]);
     }
 
     public void GetPerceivedHostileActors(out Palforge.Sdk.Script.Engine.Actor[] outActors)
     {
-        var arguments = new byte[][] { Bytes<nint>(0) };
+        var arguments = new byte[][] { new byte[16] };
         Call("GetPerceivedHostileActors", arguments, out var outputs);
         outActors = SdkEnv.Objects<Palforge.Sdk.Script.Engine.Actor>(outputs[0]);
     }
 
     public void GetPerceivedActors(UObject? senseToUse, out Palforge.Sdk.Script.Engine.Actor[] outActors)
     {
-        var arguments = new byte[][] { Bytes<nint>(senseToUse?.Address ?? 0), Bytes<nint>(0) };
+        var arguments = new byte[][] { Bytes<nint>(senseToUse?.Address ?? 0), new byte[16] };
         Call("GetPerceivedActors", arguments, out var outputs);
         outActors = SdkEnv.Objects<Palforge.Sdk.Script.Engine.Actor>(outputs[1]);
     }
 
     public void GetKnownPerceivedActors(UObject? senseToUse, out Palforge.Sdk.Script.Engine.Actor[] outActors)
     {
-        var arguments = new byte[][] { Bytes<nint>(senseToUse?.Address ?? 0), Bytes<nint>(0) };
+        var arguments = new byte[][] { Bytes<nint>(senseToUse?.Address ?? 0), new byte[16] };
         Call("GetKnownPerceivedActors", arguments, out var outputs);
         outActors = SdkEnv.Objects<Palforge.Sdk.Script.Engine.Actor>(outputs[1]);
     }
 
     public void GetCurrentlyPerceivedActors(UObject? senseToUse, out Palforge.Sdk.Script.Engine.Actor[] outActors)
     {
-        var arguments = new byte[][] { Bytes<nint>(senseToUse?.Address ?? 0), Bytes<nint>(0) };
+        var arguments = new byte[][] { Bytes<nint>(senseToUse?.Address ?? 0), new byte[16] };
         Call("GetCurrentlyPerceivedActors", arguments, out var outputs);
         outActors = SdkEnv.Objects<Palforge.Sdk.Script.Engine.Actor>(outputs[1]);
     }

@@ -221,14 +221,14 @@ public class PalDatabaseCharacterParameter : UObject
 
     public void GetWorkSuitabilityMaterialSubTypes(string rowName, out Palforge.Sdk.Script.Pal.EPalMapObjectMaterialSubType[] materialSubTypes)
     {
-        var arguments = new byte[][] { SdkEnv.NameBytes(rowName), Bytes<nint>(0) };
+        var arguments = new byte[][] { SdkEnv.NameBytes(rowName), new byte[16] };
         Call("GetWorkSuitabilityMaterialSubTypes", arguments, out var outputs);
         materialSubTypes = SdkEnv.Values<byte>(outputs[1]).Select(static value => (Palforge.Sdk.Script.Pal.EPalMapObjectMaterialSubType)value).ToArray();
     }
 
     public void GetWorkSuitability(string rowName, out Palforge.Sdk.Script.Pal.EPalWorkSuitability[] workSuitabilities)
     {
-        var arguments = new byte[][] { SdkEnv.NameBytes(rowName), Bytes<nint>(0) };
+        var arguments = new byte[][] { SdkEnv.NameBytes(rowName), new byte[16] };
         Call("GetWorkSuitability", arguments, out var outputs);
         workSuitabilities = SdkEnv.Values<byte>(outputs[1]).Select(static value => (Palforge.Sdk.Script.Pal.EPalWorkSuitability)value).ToArray();
     }

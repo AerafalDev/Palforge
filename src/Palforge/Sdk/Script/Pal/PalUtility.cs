@@ -116,14 +116,14 @@ public class PalUtility : Palforge.Sdk.Script.Engine.BlueprintFunctionLibrary
 
     public static void SortActorListByLabel(out Palforge.Sdk.Script.Engine.Actor[] actorList)
     {
-        var arguments = new byte[][] { Bytes<nint>(0) };
+        var arguments = new byte[][] { new byte[16] };
         SdkEnv.CallStatic("PalUtility", "SortActorListByLabel", arguments, out var outputs);
         actorList = SdkEnv.Objects<Palforge.Sdk.Script.Engine.Actor>(outputs[0]);
     }
 
     public static void SortActorListByDistance(out Palforge.Sdk.Script.Engine.Actor[] actorList, Palforge.Sdk.Script.CoreUObject.Vector baseLocation)
     {
-        var arguments = new byte[][] { Bytes<nint>(0), SdkEnv.StructBytes(baseLocation, 24) };
+        var arguments = new byte[][] { new byte[16], SdkEnv.StructBytes(baseLocation, 24) };
         SdkEnv.CallStatic("PalUtility", "SortActorListByDistance", arguments, out var outputs);
         actorList = SdkEnv.Objects<Palforge.Sdk.Script.Engine.Actor>(outputs[0]);
     }
@@ -1182,7 +1182,7 @@ public class PalUtility : Palforge.Sdk.Script.Engine.BlueprintFunctionLibrary
 
     public static void GetWeakElementType(Palforge.Sdk.Script.Pal.EPalElementType type1, Palforge.Sdk.Script.Pal.EPalElementType type2, out Palforge.Sdk.Script.Pal.EPalElementType[] outArray)
     {
-        var arguments = new byte[][] { Bytes((byte)type1), Bytes((byte)type2), Bytes<nint>(0) };
+        var arguments = new byte[][] { Bytes((byte)type1), Bytes((byte)type2), new byte[16] };
         SdkEnv.CallStatic("PalUtility", "GetWeakElementType", arguments, out var outputs);
         outArray = SdkEnv.Values<byte>(outputs[2]).Select(static value => (Palforge.Sdk.Script.Pal.EPalElementType)value).ToArray();
     }
@@ -1616,7 +1616,7 @@ public class PalUtility : Palforge.Sdk.Script.Engine.BlueprintFunctionLibrary
 
     public static void GetPalMonsters(UObject? worldContextObject, out Palforge.Sdk.Script.Pal.PalCharacter[] outCharacters)
     {
-        var arguments = new byte[][] { Bytes<nint>(worldContextObject?.Address ?? 0), Bytes<nint>(0) };
+        var arguments = new byte[][] { Bytes<nint>(worldContextObject?.Address ?? 0), new byte[16] };
         SdkEnv.CallStatic("PalUtility", "GetPalMonsters", arguments, out var outputs);
         outCharacters = SdkEnv.Objects<Palforge.Sdk.Script.Pal.PalCharacter>(outputs[1]);
     }
@@ -1663,7 +1663,7 @@ public class PalUtility : Palforge.Sdk.Script.Engine.BlueprintFunctionLibrary
 
     public static void GetPalCharacters(UObject? worldContextObject, out Palforge.Sdk.Script.Pal.PalCharacter[] outCharacters)
     {
-        var arguments = new byte[][] { Bytes<nint>(worldContextObject?.Address ?? 0), Bytes<nint>(0) };
+        var arguments = new byte[][] { Bytes<nint>(worldContextObject?.Address ?? 0), new byte[16] };
         SdkEnv.CallStatic("PalUtility", "GetPalCharacters", arguments, out var outputs);
         outCharacters = SdkEnv.Objects<Palforge.Sdk.Script.Pal.PalCharacter>(outputs[1]);
     }
@@ -1824,7 +1824,7 @@ public class PalUtility : Palforge.Sdk.Script.Engine.BlueprintFunctionLibrary
 
     public static void GetMontageNotifyStates(Palforge.Sdk.Script.Engine.AnimMontage? montange, out Palforge.Sdk.Script.Engine.AnimNotifyState[] outStates, string sectionName)
     {
-        var arguments = new byte[][] { Bytes<nint>(montange?.Address ?? 0), Bytes<nint>(0), SdkEnv.NameBytes(sectionName) };
+        var arguments = new byte[][] { Bytes<nint>(montange?.Address ?? 0), new byte[16], SdkEnv.NameBytes(sectionName) };
         SdkEnv.CallStatic("PalUtility", "GetMontageNotifyStates", arguments, out var outputs);
         outStates = SdkEnv.Objects<Palforge.Sdk.Script.Engine.AnimNotifyState>(outputs[1]);
     }
@@ -1836,7 +1836,7 @@ public class PalUtility : Palforge.Sdk.Script.Engine.BlueprintFunctionLibrary
 
     public static void GetMontageNotifies(Palforge.Sdk.Script.Engine.AnimMontage? montage, out Palforge.Sdk.Script.Engine.AnimNotify[] outNotifies, string notifyName)
     {
-        var arguments = new byte[][] { Bytes<nint>(montage?.Address ?? 0), Bytes<nint>(0), SdkEnv.NameBytes(notifyName) };
+        var arguments = new byte[][] { Bytes<nint>(montage?.Address ?? 0), new byte[16], SdkEnv.NameBytes(notifyName) };
         SdkEnv.CallStatic("PalUtility", "GetMontageNotifies", arguments, out var outputs);
         outNotifies = SdkEnv.Objects<Palforge.Sdk.Script.Engine.AnimNotify>(outputs[1]);
     }
@@ -2042,7 +2042,7 @@ public class PalUtility : Palforge.Sdk.Script.Engine.BlueprintFunctionLibrary
 
     public static void GetHumanNPCs(UObject? worldContextObject, out Palforge.Sdk.Script.Pal.PalCharacter[] outCharacters)
     {
-        var arguments = new byte[][] { Bytes<nint>(worldContextObject?.Address ?? 0), Bytes<nint>(0) };
+        var arguments = new byte[][] { Bytes<nint>(worldContextObject?.Address ?? 0), new byte[16] };
         SdkEnv.CallStatic("PalUtility", "GetHumanNPCs", arguments, out var outputs);
         outCharacters = SdkEnv.Objects<Palforge.Sdk.Script.Pal.PalCharacter>(outputs[1]);
     }
@@ -2369,7 +2369,7 @@ public class PalUtility : Palforge.Sdk.Script.Engine.BlueprintFunctionLibrary
 
     public static void GetCharacterApartFromPlayer(UObject? worldContextObject, out Palforge.Sdk.Script.Pal.PalCharacter[] outCharacters)
     {
-        var arguments = new byte[][] { Bytes<nint>(worldContextObject?.Address ?? 0), Bytes<nint>(0) };
+        var arguments = new byte[][] { Bytes<nint>(worldContextObject?.Address ?? 0), new byte[16] };
         SdkEnv.CallStatic("PalUtility", "GetCharacterApartFromPlayer", arguments, out var outputs);
         outCharacters = SdkEnv.Objects<Palforge.Sdk.Script.Pal.PalCharacter>(outputs[1]);
     }
@@ -2381,7 +2381,7 @@ public class PalUtility : Palforge.Sdk.Script.Engine.BlueprintFunctionLibrary
 
     public static void GetCalculatedCaptureRate(UObject? worldContextObject, float baseRate, out float[] outCalculatedRateArray)
     {
-        var arguments = new byte[][] { Bytes<nint>(worldContextObject?.Address ?? 0), Bytes(baseRate), Bytes<nint>(0) };
+        var arguments = new byte[][] { Bytes<nint>(worldContextObject?.Address ?? 0), Bytes(baseRate), new byte[16] };
         SdkEnv.CallStatic("PalUtility", "GetCalculatedCaptureRate", arguments, out var outputs);
         outCalculatedRateArray = SdkEnv.Values<float>(outputs[2]);
     }
@@ -2500,28 +2500,28 @@ public class PalUtility : Palforge.Sdk.Script.Engine.BlueprintFunctionLibrary
 
     public static void GetAllPlayerStates(UObject? worldContextObject, out Palforge.Sdk.Script.Pal.PalPlayerState[] outPlayerStates)
     {
-        var arguments = new byte[][] { Bytes<nint>(worldContextObject?.Address ?? 0), Bytes<nint>(0) };
+        var arguments = new byte[][] { Bytes<nint>(worldContextObject?.Address ?? 0), new byte[16] };
         SdkEnv.CallStatic("PalUtility", "GetAllPlayerStates", arguments, out var outputs);
         outPlayerStates = SdkEnv.Objects<Palforge.Sdk.Script.Pal.PalPlayerState>(outputs[1]);
     }
 
     public static void GetAllPlayers(UObject? worldContextObject, out Palforge.Sdk.Script.Pal.PalPlayerCharacter[] outPlayers)
     {
-        var arguments = new byte[][] { Bytes<nint>(worldContextObject?.Address ?? 0), Bytes<nint>(0) };
+        var arguments = new byte[][] { Bytes<nint>(worldContextObject?.Address ?? 0), new byte[16] };
         SdkEnv.CallStatic("PalUtility", "GetAllPlayers", arguments, out var outputs);
         outPlayers = SdkEnv.Objects<Palforge.Sdk.Script.Pal.PalPlayerCharacter>(outputs[1]);
     }
 
     public static void GetAllPlayerCharacters(UObject? worldContextObject, out Palforge.Sdk.Script.Pal.PalCharacter[] outPlayers)
     {
-        var arguments = new byte[][] { Bytes<nint>(worldContextObject?.Address ?? 0), Bytes<nint>(0) };
+        var arguments = new byte[][] { Bytes<nint>(worldContextObject?.Address ?? 0), new byte[16] };
         SdkEnv.CallStatic("PalUtility", "GetAllPlayerCharacters", arguments, out var outputs);
         outPlayers = SdkEnv.Objects<Palforge.Sdk.Script.Pal.PalCharacter>(outputs[1]);
     }
 
     public static void GetAllControlledCharacters(UObject? worldContextObject, out Palforge.Sdk.Script.Pal.PalCharacter[] outCharacters)
     {
-        var arguments = new byte[][] { Bytes<nint>(worldContextObject?.Address ?? 0), Bytes<nint>(0) };
+        var arguments = new byte[][] { Bytes<nint>(worldContextObject?.Address ?? 0), new byte[16] };
         SdkEnv.CallStatic("PalUtility", "GetAllControlledCharacters", arguments, out var outputs);
         outCharacters = SdkEnv.Objects<Palforge.Sdk.Script.Pal.PalCharacter>(outputs[1]);
     }
@@ -2548,7 +2548,7 @@ public class PalUtility : Palforge.Sdk.Script.Engine.BlueprintFunctionLibrary
 
     public static void GetActorByGrid(UObject? worldContextObject, UObject? actorClass, Palforge.Sdk.Script.CoreUObject.Vector2D minPoint, Palforge.Sdk.Script.CoreUObject.Vector2D maxPoint, int gridXMax, int gridYMax, int gridXNum, int gridYNum, out Palforge.Sdk.Script.Engine.Actor[] outActors)
     {
-        var arguments = new byte[][] { Bytes<nint>(worldContextObject?.Address ?? 0), Bytes<nint>(actorClass?.Address ?? 0), SdkEnv.StructBytes(minPoint, 16), SdkEnv.StructBytes(maxPoint, 16), Bytes(gridXMax), Bytes(gridYMax), Bytes(gridXNum), Bytes(gridYNum), Bytes<nint>(0) };
+        var arguments = new byte[][] { Bytes<nint>(worldContextObject?.Address ?? 0), Bytes<nint>(actorClass?.Address ?? 0), SdkEnv.StructBytes(minPoint, 16), SdkEnv.StructBytes(maxPoint, 16), Bytes(gridXMax), Bytes(gridYMax), Bytes(gridXNum), Bytes(gridYNum), new byte[16] };
         SdkEnv.CallStatic("PalUtility", "GetActorByGrid", arguments, out var outputs);
         outActors = SdkEnv.Objects<Palforge.Sdk.Script.Engine.Actor>(outputs[8]);
     }

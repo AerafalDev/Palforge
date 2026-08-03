@@ -138,7 +138,7 @@ public class PalRaidBossComponent : Palforge.Sdk.Script.Engine.ActorComponent
 
     public Palforge.Sdk.Script.Pal.PalPlayerCharacter? FindInRangePlayers(out Palforge.Sdk.Script.Pal.PalPlayerCharacter[] players, bool onlyAlive)
     {
-        var arguments = new byte[][] { Bytes<nint>(0), Bytes<byte>(onlyAlive ? (byte)1 : (byte)0) };
+        var arguments = new byte[][] { new byte[16], Bytes<byte>(onlyAlive ? (byte)1 : (byte)0) };
         var result = Call("FindInRangePlayers", arguments, out var outputs);
         players = SdkEnv.Objects<Palforge.Sdk.Script.Pal.PalPlayerCharacter>(outputs[0]);
         return SdkEnv.Wrap(result) as Palforge.Sdk.Script.Pal.PalPlayerCharacter;

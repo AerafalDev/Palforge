@@ -34,7 +34,7 @@ public class OnsetNRT : Palforge.Sdk.Script.AudioSynesthesia.AudioSynesthesiaNRT
 
     public void GetNormalizedChannelOnsetsBetweenTimes(float inStartSeconds, float inEndSeconds, int inChannel, out float[] outOnsetTimestamps, out float[] outOnsetStrengths)
     {
-        var arguments = new byte[][] { Bytes(inStartSeconds), Bytes(inEndSeconds), Bytes(inChannel), Bytes<nint>(0), Bytes<nint>(0) };
+        var arguments = new byte[][] { Bytes(inStartSeconds), Bytes(inEndSeconds), Bytes(inChannel), new byte[16], new byte[16] };
         Call("GetNormalizedChannelOnsetsBetweenTimes", arguments, out var outputs);
         outOnsetTimestamps = SdkEnv.Values<float>(outputs[3]);
         outOnsetStrengths = SdkEnv.Values<float>(outputs[4]);
@@ -42,7 +42,7 @@ public class OnsetNRT : Palforge.Sdk.Script.AudioSynesthesia.AudioSynesthesiaNRT
 
     public void GetChannelOnsetsBetweenTimes(float inStartSeconds, float inEndSeconds, int inChannel, out float[] outOnsetTimestamps, out float[] outOnsetStrengths)
     {
-        var arguments = new byte[][] { Bytes(inStartSeconds), Bytes(inEndSeconds), Bytes(inChannel), Bytes<nint>(0), Bytes<nint>(0) };
+        var arguments = new byte[][] { Bytes(inStartSeconds), Bytes(inEndSeconds), Bytes(inChannel), new byte[16], new byte[16] };
         Call("GetChannelOnsetsBetweenTimes", arguments, out var outputs);
         outOnsetTimestamps = SdkEnv.Values<float>(outputs[3]);
         outOnsetStrengths = SdkEnv.Values<float>(outputs[4]);

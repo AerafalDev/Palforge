@@ -83,7 +83,7 @@ public class PalBattleManager : Palforge.Sdk.Script.Pal.PalWorldSubsystem
 
     public bool GetConflictEnemies(Palforge.Sdk.Script.Engine.Actor? player, out Palforge.Sdk.Script.Engine.Actor[] outEnemyes, bool ignoreOtomoStopByBall)
     {
-        var arguments = new byte[][] { Bytes<nint>(player?.Address ?? 0), Bytes<nint>(0), Bytes<byte>(ignoreOtomoStopByBall ? (byte)1 : (byte)0) };
+        var arguments = new byte[][] { Bytes<nint>(player?.Address ?? 0), new byte[16], Bytes<byte>(ignoreOtomoStopByBall ? (byte)1 : (byte)0) };
         var result = Call("GetConflictEnemies", arguments, out var outputs);
         outEnemyes = SdkEnv.Objects<Palforge.Sdk.Script.Engine.Actor>(outputs[1]);
         return As<byte>(result) is not 0;

@@ -164,7 +164,7 @@ public class ListView : Palforge.Sdk.Script.Umg.ListViewBase
 
     public bool BpGetSelectedItems(out UObject[] items)
     {
-        var arguments = new byte[][] { Bytes<nint>(0) };
+        var arguments = new byte[][] { new byte[16] };
         var result = Call("BP_GetSelectedItems", arguments, out var outputs);
         items = SdkEnv.Objects<UObject>(outputs[0]);
         return As<byte>(result) is not 0;

@@ -89,7 +89,7 @@ public class PalUIGlobalPalStorageList : Palforge.Sdk.Script.Pal.PalUserWidget
 
     public bool GetDummyPageSlots(int pageNum, out Palforge.Sdk.Script.Pal.PalIndividualCharacterSlot[] outSlots)
     {
-        var arguments = new byte[][] { Bytes(pageNum), Bytes<nint>(0) };
+        var arguments = new byte[][] { Bytes(pageNum), new byte[16] };
         var result = Call("GetDummyPageSlots", arguments, out var outputs);
         outSlots = SdkEnv.Objects<Palforge.Sdk.Script.Pal.PalIndividualCharacterSlot>(outputs[1]);
         return As<byte>(result) is not 0;

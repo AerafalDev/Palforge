@@ -147,7 +147,7 @@ public class PalRandomIncidentSpawnerBase : Palforge.Sdk.Script.Engine.Actor
 
     public void DestroyUnuseActors(out Palforge.Sdk.Script.Engine.Actor[] outList)
     {
-        var arguments = new byte[][] { Bytes<nint>(0) };
+        var arguments = new byte[][] { new byte[16] };
         Call("DestroyUnuseActors", arguments, out var outputs);
         outList = SdkEnv.Objects<Palforge.Sdk.Script.Engine.Actor>(outputs[0]);
     }
@@ -159,7 +159,7 @@ public class PalRandomIncidentSpawnerBase : Palforge.Sdk.Script.Engine.Actor
 
     public void CollectChildActors(out Palforge.Sdk.Script.Engine.Actor[] outList)
     {
-        var arguments = new byte[][] { Bytes<nint>(0) };
+        var arguments = new byte[][] { new byte[16] };
         Call("CollectChildActors", arguments, out var outputs);
         outList = SdkEnv.Objects<Palforge.Sdk.Script.Engine.Actor>(outputs[0]);
     }

@@ -39,7 +39,7 @@ public class SynesthesiaSpectrumAnalyzer : Palforge.Sdk.Script.AudioAnalyzer.Aud
 
     public void GetCenterFrequencies(float inSampleRate, out float[] outCenterFrequencies)
     {
-        var arguments = new byte[][] { Bytes(inSampleRate), Bytes<nint>(0) };
+        var arguments = new byte[][] { Bytes(inSampleRate), new byte[16] };
         Call("GetCenterFrequencies", arguments, out var outputs);
         outCenterFrequencies = SdkEnv.Values<float>(outputs[1]);
     }

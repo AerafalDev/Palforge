@@ -51,7 +51,7 @@ public class SubmixEffectTapDelayPreset : Palforge.Sdk.Script.Engine.SoundEffect
 
     public void GetTapIds(out int[] tapIds)
     {
-        var arguments = new byte[][] { Bytes<nint>(0) };
+        var arguments = new byte[][] { new byte[16] };
         Call("GetTapIds", arguments, out var outputs);
         tapIds = SdkEnv.Values<int>(outputs[0]);
     }

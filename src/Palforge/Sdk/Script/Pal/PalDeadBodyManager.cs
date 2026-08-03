@@ -31,7 +31,7 @@ public class PalDeadBodyManager : UObject
 
     public void GetDeadPalList(out Palforge.Sdk.Script.Pal.PalIndividualCharacterHandle[] outArray)
     {
-        var arguments = new byte[][] { Bytes<nint>(0) };
+        var arguments = new byte[][] { new byte[16] };
         Call("GetDeadPalList", arguments, out var outputs);
         outArray = SdkEnv.Objects<Palforge.Sdk.Script.Pal.PalIndividualCharacterHandle>(outputs[0]);
     }

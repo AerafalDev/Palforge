@@ -160,7 +160,7 @@ public class PalBaseCampWorkerDirector : UObject
 
     public void GetCharacterHandleSlots(out Palforge.Sdk.Script.Pal.PalIndividualCharacterSlot[] outSlots)
     {
-        var arguments = new byte[][] { Bytes<nint>(0) };
+        var arguments = new byte[][] { new byte[16] };
         Call("GetCharacterHandleSlots", arguments, out var outputs);
         outSlots = SdkEnv.Objects<Palforge.Sdk.Script.Pal.PalIndividualCharacterSlot>(outputs[0]);
     }

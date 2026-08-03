@@ -35,7 +35,7 @@ public class KismetProceduralMeshLibrary : Palforge.Sdk.Script.Engine.BlueprintF
 
     public static void CreateGridMeshTriangles(int numX, int numY, bool bWinding, out int[] triangles)
     {
-        var arguments = new byte[][] { Bytes(numX), Bytes(numY), Bytes<byte>(bWinding ? (byte)1 : (byte)0), Bytes<nint>(0) };
+        var arguments = new byte[][] { Bytes(numX), Bytes(numY), Bytes<byte>(bWinding ? (byte)1 : (byte)0), new byte[16] };
         SdkEnv.CallStatic("KismetProceduralMeshLibrary", "CreateGridMeshTriangles", arguments, out var outputs);
         triangles = SdkEnv.Values<int>(outputs[3]);
     }
@@ -47,7 +47,7 @@ public class KismetProceduralMeshLibrary : Palforge.Sdk.Script.Engine.BlueprintF
 
     public static void ConvertQuadToTriangles(out int[] triangles, int vert0, int vert1, int vert2, int vert3)
     {
-        var arguments = new byte[][] { Bytes<nint>(0), Bytes(vert0), Bytes(vert1), Bytes(vert2), Bytes(vert3) };
+        var arguments = new byte[][] { new byte[16], Bytes(vert0), Bytes(vert1), Bytes(vert2), Bytes(vert3) };
         SdkEnv.CallStatic("KismetProceduralMeshLibrary", "ConvertQuadToTriangles", arguments, out var outputs);
         triangles = SdkEnv.Values<int>(outputs[0]);
     }

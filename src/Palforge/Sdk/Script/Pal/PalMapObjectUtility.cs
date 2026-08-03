@@ -28,7 +28,7 @@ public class PalMapObjectUtility : Palforge.Sdk.Script.Engine.BlueprintFunctionL
 
     public static bool TryGetItemVisualModelStaticMesh(UObject? actorClass, out Palforge.Sdk.Script.Engine.StaticMesh? outStaticMesh, Palforge.Sdk.Script.CoreUObject.Transform outComponentTransform, Palforge.Sdk.Script.CoreUObject.Vector outCenterOfMass, out Palforge.Sdk.Script.Engine.MaterialInterface[] outMaterialInterface)
     {
-        var arguments = new byte[][] { Bytes<nint>(actorClass?.Address ?? 0), Bytes<nint>(0), SdkEnv.StructBytes(outComponentTransform, 96), SdkEnv.StructBytes(outCenterOfMass, 24), Bytes<nint>(0) };
+        var arguments = new byte[][] { Bytes<nint>(actorClass?.Address ?? 0), Bytes<nint>(0), SdkEnv.StructBytes(outComponentTransform, 96), SdkEnv.StructBytes(outCenterOfMass, 24), new byte[16] };
         var destinations = new nint[] { 0, 0, outComponentTransform.Address, outCenterOfMass.Address, 0 };
         var result = SdkEnv.CallStatic("PalMapObjectUtility", "TryGetItemVisualModelStaticMesh", arguments, destinations, out var outputs);
         outStaticMesh = SdkEnv.Wrap(outputs[1]) as Palforge.Sdk.Script.Engine.StaticMesh;

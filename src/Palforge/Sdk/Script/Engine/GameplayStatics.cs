@@ -502,28 +502,28 @@ public class GameplayStatics : Palforge.Sdk.Script.Engine.BlueprintFunctionLibra
 
     public static void GetAllActorsWithTag(UObject? worldContextObject, string tag, out Palforge.Sdk.Script.Engine.Actor[] outActors)
     {
-        var arguments = new byte[][] { Bytes<nint>(worldContextObject?.Address ?? 0), SdkEnv.NameBytes(tag), Bytes<nint>(0) };
+        var arguments = new byte[][] { Bytes<nint>(worldContextObject?.Address ?? 0), SdkEnv.NameBytes(tag), new byte[16] };
         SdkEnv.CallStatic("GameplayStatics", "GetAllActorsWithTag", arguments, out var outputs);
         outActors = SdkEnv.Objects<Palforge.Sdk.Script.Engine.Actor>(outputs[2]);
     }
 
     public static void GetAllActorsWithInterface(UObject? worldContextObject, UObject? @interface, out Palforge.Sdk.Script.Engine.Actor[] outActors)
     {
-        var arguments = new byte[][] { Bytes<nint>(worldContextObject?.Address ?? 0), Bytes<nint>(@interface?.Address ?? 0), Bytes<nint>(0) };
+        var arguments = new byte[][] { Bytes<nint>(worldContextObject?.Address ?? 0), Bytes<nint>(@interface?.Address ?? 0), new byte[16] };
         SdkEnv.CallStatic("GameplayStatics", "GetAllActorsWithInterface", arguments, out var outputs);
         outActors = SdkEnv.Objects<Palforge.Sdk.Script.Engine.Actor>(outputs[2]);
     }
 
     public static void GetAllActorsOfClassWithTag(UObject? worldContextObject, UObject? actorClass, string tag, out Palforge.Sdk.Script.Engine.Actor[] outActors)
     {
-        var arguments = new byte[][] { Bytes<nint>(worldContextObject?.Address ?? 0), Bytes<nint>(actorClass?.Address ?? 0), SdkEnv.NameBytes(tag), Bytes<nint>(0) };
+        var arguments = new byte[][] { Bytes<nint>(worldContextObject?.Address ?? 0), Bytes<nint>(actorClass?.Address ?? 0), SdkEnv.NameBytes(tag), new byte[16] };
         SdkEnv.CallStatic("GameplayStatics", "GetAllActorsOfClassWithTag", arguments, out var outputs);
         outActors = SdkEnv.Objects<Palforge.Sdk.Script.Engine.Actor>(outputs[3]);
     }
 
     public static void GetAllActorsOfClass(UObject? worldContextObject, UObject? actorClass, out Palforge.Sdk.Script.Engine.Actor[] outActors)
     {
-        var arguments = new byte[][] { Bytes<nint>(worldContextObject?.Address ?? 0), Bytes<nint>(actorClass?.Address ?? 0), Bytes<nint>(0) };
+        var arguments = new byte[][] { Bytes<nint>(worldContextObject?.Address ?? 0), Bytes<nint>(actorClass?.Address ?? 0), new byte[16] };
         SdkEnv.CallStatic("GameplayStatics", "GetAllActorsOfClass", arguments, out var outputs);
         outActors = SdkEnv.Objects<Palforge.Sdk.Script.Engine.Actor>(outputs[2]);
     }

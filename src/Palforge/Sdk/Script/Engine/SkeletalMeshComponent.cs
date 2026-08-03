@@ -741,7 +741,7 @@ public class SkeletalMeshComponent : Palforge.Sdk.Script.Engine.SkinnedMeshCompo
 
     public void GetLinkedAnimGraphInstancesByTag(string inTag, out Palforge.Sdk.Script.Engine.AnimInstance[] outLinkedInstances)
     {
-        var arguments = new byte[][] { SdkEnv.NameBytes(inTag), Bytes<nint>(0) };
+        var arguments = new byte[][] { SdkEnv.NameBytes(inTag), new byte[16] };
         Call("GetLinkedAnimGraphInstancesByTag", arguments, out var outputs);
         outLinkedInstances = SdkEnv.Objects<Palforge.Sdk.Script.Engine.AnimInstance>(outputs[1]);
     }

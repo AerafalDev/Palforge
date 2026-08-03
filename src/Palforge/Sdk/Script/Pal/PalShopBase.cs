@@ -96,7 +96,7 @@ public class PalShopBase : UObject
 
     public void GetAllProduct(out Palforge.Sdk.Script.Pal.PalShopProductBase[] outProductArray)
     {
-        var arguments = new byte[][] { Bytes<nint>(0) };
+        var arguments = new byte[][] { new byte[16] };
         Call("GetAllProduct", arguments, out var outputs);
         outProductArray = SdkEnv.Objects<Palforge.Sdk.Script.Pal.PalShopProductBase>(outputs[0]);
     }

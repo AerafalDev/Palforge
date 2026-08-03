@@ -217,14 +217,14 @@ public class WidgetBlueprintLibrary : Palforge.Sdk.Script.Engine.BlueprintFuncti
 
     public static void GetAllWidgetsWithInterface(UObject? worldContextObject, out Palforge.Sdk.Script.Umg.UserWidget[] foundWidgets, UObject? @interface, bool topLevelOnly)
     {
-        var arguments = new byte[][] { Bytes<nint>(worldContextObject?.Address ?? 0), Bytes<nint>(0), Bytes<nint>(@interface?.Address ?? 0), Bytes<byte>(topLevelOnly ? (byte)1 : (byte)0) };
+        var arguments = new byte[][] { Bytes<nint>(worldContextObject?.Address ?? 0), new byte[16], Bytes<nint>(@interface?.Address ?? 0), Bytes<byte>(topLevelOnly ? (byte)1 : (byte)0) };
         SdkEnv.CallStatic("WidgetBlueprintLibrary", "GetAllWidgetsWithInterface", arguments, out var outputs);
         foundWidgets = SdkEnv.Objects<Palforge.Sdk.Script.Umg.UserWidget>(outputs[1]);
     }
 
     public static void GetAllWidgetsOfClass(UObject? worldContextObject, out Palforge.Sdk.Script.Umg.UserWidget[] foundWidgets, UObject? widgetClass, bool topLevelOnly)
     {
-        var arguments = new byte[][] { Bytes<nint>(worldContextObject?.Address ?? 0), Bytes<nint>(0), Bytes<nint>(widgetClass?.Address ?? 0), Bytes<byte>(topLevelOnly ? (byte)1 : (byte)0) };
+        var arguments = new byte[][] { Bytes<nint>(worldContextObject?.Address ?? 0), new byte[16], Bytes<nint>(widgetClass?.Address ?? 0), Bytes<byte>(topLevelOnly ? (byte)1 : (byte)0) };
         SdkEnv.CallStatic("WidgetBlueprintLibrary", "GetAllWidgetsOfClass", arguments, out var outputs);
         foundWidgets = SdkEnv.Objects<Palforge.Sdk.Script.Umg.UserWidget>(outputs[1]);
     }

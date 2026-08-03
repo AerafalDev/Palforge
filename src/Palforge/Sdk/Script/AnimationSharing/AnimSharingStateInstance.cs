@@ -58,7 +58,7 @@ public class AnimSharingStateInstance : Palforge.Sdk.Script.Engine.AnimInstance
 
     public void GetInstancedActors(out Palforge.Sdk.Script.Engine.Actor[] actors)
     {
-        var arguments = new byte[][] { Bytes<nint>(0) };
+        var arguments = new byte[][] { new byte[16] };
         Call("GetInstancedActors", arguments, out var outputs);
         actors = SdkEnv.Objects<Palforge.Sdk.Script.Engine.Actor>(outputs[0]);
     }

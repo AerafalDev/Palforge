@@ -856,14 +856,14 @@ public class Actor : UObject
 
     public void GetOverlappingComponents(out Palforge.Sdk.Script.Engine.PrimitiveComponent[] overlappingComponents)
     {
-        var arguments = new byte[][] { Bytes<nint>(0) };
+        var arguments = new byte[][] { new byte[16] };
         Call("GetOverlappingComponents", arguments, out var outputs);
         overlappingComponents = SdkEnv.Objects<Palforge.Sdk.Script.Engine.PrimitiveComponent>(outputs[0]);
     }
 
     public void GetOverlappingActors(out Palforge.Sdk.Script.Engine.Actor[] overlappingActors, UObject? classFilter)
     {
-        var arguments = new byte[][] { Bytes<nint>(0), Bytes<nint>(classFilter?.Address ?? 0) };
+        var arguments = new byte[][] { new byte[16], Bytes<nint>(classFilter?.Address ?? 0) };
         Call("GetOverlappingActors", arguments, out var outputs);
         overlappingActors = SdkEnv.Objects<Palforge.Sdk.Script.Engine.Actor>(outputs[0]);
     }
@@ -955,14 +955,14 @@ public class Actor : UObject
 
     public void GetAttachedActors(out Palforge.Sdk.Script.Engine.Actor[] outActors, bool bResetArray, bool bRecursivelyIncludeAttachedActors)
     {
-        var arguments = new byte[][] { Bytes<nint>(0), Bytes<byte>(bResetArray ? (byte)1 : (byte)0), Bytes<byte>(bRecursivelyIncludeAttachedActors ? (byte)1 : (byte)0) };
+        var arguments = new byte[][] { new byte[16], Bytes<byte>(bResetArray ? (byte)1 : (byte)0), Bytes<byte>(bRecursivelyIncludeAttachedActors ? (byte)1 : (byte)0) };
         Call("GetAttachedActors", arguments, out var outputs);
         outActors = SdkEnv.Objects<Palforge.Sdk.Script.Engine.Actor>(outputs[0]);
     }
 
     public void GetAllChildActors(out Palforge.Sdk.Script.Engine.Actor[] childActors, bool bIncludeDescendants)
     {
-        var arguments = new byte[][] { Bytes<nint>(0), Bytes<byte>(bIncludeDescendants ? (byte)1 : (byte)0) };
+        var arguments = new byte[][] { new byte[16], Bytes<byte>(bIncludeDescendants ? (byte)1 : (byte)0) };
         Call("GetAllChildActors", arguments, out var outputs);
         childActors = SdkEnv.Objects<Palforge.Sdk.Script.Engine.Actor>(outputs[0]);
     }

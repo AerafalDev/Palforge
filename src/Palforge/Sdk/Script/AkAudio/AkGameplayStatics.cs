@@ -238,7 +238,7 @@ public class AkGameplayStatics : Palforge.Sdk.Script.Engine.BlueprintFunctionLib
 
     public static void GetSpeakerAngles(out float[] speakerAngles, out float heightAngle, string deviceShareSet)
     {
-        var arguments = new byte[][] { Bytes<nint>(0), Bytes<float>(default), StringArgument(deviceShareSet) };
+        var arguments = new byte[][] { new byte[16], Bytes<float>(default), StringArgument(deviceShareSet) };
         SdkEnv.CallStatic("AkGameplayStatics", "GetSpeakerAngles", arguments, out var outputs);
         speakerAngles = SdkEnv.Values<float>(outputs[0]);
         heightAngle = As<float>(outputs[1]);
@@ -282,7 +282,7 @@ public class AkGameplayStatics : Palforge.Sdk.Script.Engine.BlueprintFunctionLib
 
     public static void AddOutput(Palforge.Sdk.Script.AkAudio.AkOutputSettings inSettings, Palforge.Sdk.Script.WwiseObjectUtils.AkOutputDeviceID outDeviceID, out Palforge.Sdk.Script.AkAudio.AkComponent[] inListenerIDs)
     {
-        var arguments = new byte[][] { SdkEnv.StructBytes(inSettings, 24), SdkEnv.StructBytes(outDeviceID, 8), Bytes<nint>(0) };
+        var arguments = new byte[][] { SdkEnv.StructBytes(inSettings, 24), SdkEnv.StructBytes(outDeviceID, 8), new byte[16] };
         var destinations = new nint[] { 0, outDeviceID.Address, 0 };
         SdkEnv.CallStatic("AkGameplayStatics", "AddOutput", arguments, destinations, out var outputs);
         inListenerIDs = SdkEnv.Objects<Palforge.Sdk.Script.AkAudio.AkComponent>(outputs[2]);

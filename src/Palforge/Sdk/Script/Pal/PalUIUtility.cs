@@ -154,7 +154,7 @@ public class PalUIUtility : Palforge.Sdk.Script.Engine.BlueprintFunctionLibrary
 
     public static void GetUIDisplayPalCondition(UObject? worldContextObject, out Palforge.Sdk.Script.Pal.EPalUIConditionType[] outArray, Palforge.Sdk.Script.Pal.PalIndividualCharacterHandle? targetHandle)
     {
-        var arguments = new byte[][] { Bytes<nint>(worldContextObject?.Address ?? 0), Bytes<nint>(0), Bytes<nint>(targetHandle?.Address ?? 0) };
+        var arguments = new byte[][] { Bytes<nint>(worldContextObject?.Address ?? 0), new byte[16], Bytes<nint>(targetHandle?.Address ?? 0) };
         SdkEnv.CallStatic("PalUIUtility", "GetUIDisplayPalCondition", arguments, out var outputs);
         outArray = SdkEnv.Values<byte>(outputs[1]).Select(static value => (Palforge.Sdk.Script.Pal.EPalUIConditionType)value).ToArray();
     }
@@ -185,7 +185,7 @@ public class PalUIUtility : Palforge.Sdk.Script.Engine.BlueprintFunctionLibrary
 
     public static bool GetSortedEssentialItemSlotArrayForUIDisplay(UObject? worldContextObject, out Palforge.Sdk.Script.Pal.PalItemSlot[] outArray)
     {
-        var arguments = new byte[][] { Bytes<nint>(worldContextObject?.Address ?? 0), Bytes<nint>(0) };
+        var arguments = new byte[][] { Bytes<nint>(worldContextObject?.Address ?? 0), new byte[16] };
         var result = SdkEnv.CallStatic("PalUIUtility", "GetSortedEssentialItemSlotArray_ForUIDisplay", arguments, out var outputs);
         outArray = SdkEnv.Objects<Palforge.Sdk.Script.Pal.PalItemSlot>(outputs[1]);
         return As<byte>(result) is not 0;

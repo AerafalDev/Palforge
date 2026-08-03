@@ -497,14 +497,14 @@ public class PalPlayerCharacter : Palforge.Sdk.Script.Pal.PalCharacter
 
     public void GetForceWarningLoupeList(out Palforge.Sdk.Script.Pal.PalCharacter[] list)
     {
-        var arguments = new byte[][] { Bytes<nint>(0) };
+        var arguments = new byte[][] { new byte[16] };
         Call("GetForceWarningLoupeList", arguments, out var outputs);
         list = SdkEnv.Objects<Palforge.Sdk.Script.Pal.PalCharacter>(outputs[0]);
     }
 
     public void GetForceHPGaugeList(out Palforge.Sdk.Script.Pal.PalCharacter[] list)
     {
-        var arguments = new byte[][] { Bytes<nint>(0) };
+        var arguments = new byte[][] { new byte[16] };
         Call("GetForceHPGaugeList", arguments, out var outputs);
         list = SdkEnv.Objects<Palforge.Sdk.Script.Pal.PalCharacter>(outputs[0]);
     }

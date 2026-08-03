@@ -45,6 +45,11 @@ public class PalUILocalWorldSelectBase : Palforge.Sdk.Script.Pal.PalUserWidgetOv
         return (Palforge.Sdk.Script.Pal.EPalSaveDataRestoreResultType)As<byte>(result);
     }
 
+    public bool OpenWorldSaveDirectory(string directoryPath)
+    {
+        return As<byte>(Call("OpenWorldSaveDirectory", StringArgument(directoryPath))) is not 0;
+    }
+
     public bool DeleteWorld(string worldSaveDirectoryName)
     {
         return As<byte>(Call("DeleteWorld", StringArgument(worldSaveDirectoryName))) is not 0;

@@ -166,7 +166,7 @@ public class PalDiscordClient : UObject
 
     public void GetFriends(out Palforge.Sdk.Script.DiscordPartnerSDK.DiscordRelationshipHandle[] friends)
     {
-        var arguments = new byte[][] { Bytes<nint>(0) };
+        var arguments = new byte[][] { new byte[16] };
         Call("GetFriends", arguments, out var outputs);
         friends = SdkEnv.Objects<Palforge.Sdk.Script.DiscordPartnerSDK.DiscordRelationshipHandle>(outputs[0]);
     }

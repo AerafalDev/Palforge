@@ -38,7 +38,7 @@ public class PalWorldSecurityUtility : Palforge.Sdk.Script.Engine.BlueprintFunct
 
     public static bool FindWantedsInSight(Palforge.Sdk.Script.Pal.PalCharacter? target, out Palforge.Sdk.Script.Pal.PalCharacter[] wanteds)
     {
-        var arguments = new byte[][] { Bytes<nint>(target?.Address ?? 0), Bytes<nint>(0) };
+        var arguments = new byte[][] { Bytes<nint>(target?.Address ?? 0), new byte[16] };
         var result = SdkEnv.CallStatic("PalWorldSecurityUtility", "FindWantedsInSight", arguments, out var outputs);
         wanteds = SdkEnv.Objects<Palforge.Sdk.Script.Pal.PalCharacter>(outputs[1]);
         return As<byte>(result) is not 0;
@@ -46,7 +46,7 @@ public class PalWorldSecurityUtility : Palforge.Sdk.Script.Engine.BlueprintFunct
 
     public static bool FindCriminalsInSight(Palforge.Sdk.Script.Pal.PalCharacter? target, out Palforge.Sdk.Script.Pal.PalCharacter[] criminals)
     {
-        var arguments = new byte[][] { Bytes<nint>(target?.Address ?? 0), Bytes<nint>(0) };
+        var arguments = new byte[][] { Bytes<nint>(target?.Address ?? 0), new byte[16] };
         var result = SdkEnv.CallStatic("PalWorldSecurityUtility", "FindCriminalsInSight", arguments, out var outputs);
         criminals = SdkEnv.Objects<Palforge.Sdk.Script.Pal.PalCharacter>(outputs[1]);
         return As<byte>(result) is not 0;

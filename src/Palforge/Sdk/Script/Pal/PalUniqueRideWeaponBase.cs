@@ -129,7 +129,7 @@ public class PalUniqueRideWeaponBase : Palforge.Sdk.Script.Pal.PalWeaponBase
 
     public void GetAllMeshComponent(out Palforge.Sdk.Script.Engine.MeshComponent[] outMesh)
     {
-        var arguments = new byte[][] { Bytes<nint>(0) };
+        var arguments = new byte[][] { new byte[16] };
         Call("GetAllMeshComponent", arguments, out var outputs);
         outMesh = SdkEnv.Objects<Palforge.Sdk.Script.Engine.MeshComponent>(outputs[0]);
     }

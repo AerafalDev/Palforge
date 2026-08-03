@@ -49,7 +49,7 @@ public class PalArenaLevelInstance : Palforge.Sdk.Script.Engine.LevelInstance
 
     public void GetOutAreaVolume(out Palforge.Sdk.Script.Engine.ShapeComponent[] outAreaVolume)
     {
-        var arguments = new byte[][] { Bytes<nint>(0) };
+        var arguments = new byte[][] { new byte[16] };
         Call("GetOutAreaVolume", arguments, out var outputs);
         outAreaVolume = SdkEnv.Objects<Palforge.Sdk.Script.Engine.ShapeComponent>(outputs[0]);
     }

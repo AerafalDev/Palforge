@@ -461,7 +461,7 @@ public class PalNPCSpawnerBase : Palforge.Sdk.Script.Engine.Actor
 
     public void GetAllSpawnedNPCHandle(out Palforge.Sdk.Script.Pal.PalIndividualCharacterHandle[] handles)
     {
-        var arguments = new byte[][] { Bytes<nint>(0) };
+        var arguments = new byte[][] { new byte[16] };
         Call("GetAllSpawnedNPCHandle", arguments, out var outputs);
         handles = SdkEnv.Objects<Palforge.Sdk.Script.Pal.PalIndividualCharacterHandle>(outputs[0]);
     }

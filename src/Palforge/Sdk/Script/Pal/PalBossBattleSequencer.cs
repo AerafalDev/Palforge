@@ -168,6 +168,11 @@ public class PalBossBattleSequencer : UObject
         Call("SetAllPlayerMoveDisable", Bytes<byte>(disable ? (byte)1 : (byte)0));
     }
 
+    public void ReviveAllOtomoRevivingPlayersServerInternal()
+    {
+        Call("ReviveAllOtomoRevivingPlayers_ServerInternal");
+    }
+
     public void RemovePlayerFromInRoomList(Palforge.Sdk.Script.Pal.PalPlayerCharacter? player)
     {
         Call("RemovePlayerFromInRoomList", Bytes<nint>(player?.Address ?? 0));

@@ -200,7 +200,7 @@ public class Hud : Palforge.Sdk.Script.Engine.Actor
 
     public void GetActorsInSelectionRectangle(UObject? classFilter, Palforge.Sdk.Script.CoreUObject.Vector2D firstPoint, Palforge.Sdk.Script.CoreUObject.Vector2D secondPoint, out Palforge.Sdk.Script.Engine.Actor[] outActors, bool bIncludeNonCollidingComponents, bool bActorMustBeFullyEnclosed)
     {
-        var arguments = new byte[][] { Bytes<nint>(classFilter?.Address ?? 0), SdkEnv.StructBytes(firstPoint, 16), SdkEnv.StructBytes(secondPoint, 16), Bytes<nint>(0), Bytes<byte>(bIncludeNonCollidingComponents ? (byte)1 : (byte)0), Bytes<byte>(bActorMustBeFullyEnclosed ? (byte)1 : (byte)0) };
+        var arguments = new byte[][] { Bytes<nint>(classFilter?.Address ?? 0), SdkEnv.StructBytes(firstPoint, 16), SdkEnv.StructBytes(secondPoint, 16), new byte[16], Bytes<byte>(bIncludeNonCollidingComponents ? (byte)1 : (byte)0), Bytes<byte>(bActorMustBeFullyEnclosed ? (byte)1 : (byte)0) };
         Call("GetActorsInSelectionRectangle", arguments, out var outputs);
         outActors = SdkEnv.Objects<Palforge.Sdk.Script.Engine.Actor>(outputs[3]);
     }

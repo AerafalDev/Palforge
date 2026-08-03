@@ -47,4 +47,9 @@ public class PalPlayerManager : Palforge.Sdk.Script.Pal.PalWorldSubsystem
     {
         Call("OnCreatedIndividualHandleByAppliedSaveData_ServerInternal", SdkEnv.StructBytes(individualId, 48));
     }
+
+    public void OnCharacterDeadForPredatorRecordServerInternal(Palforge.Sdk.Script.Pal.PalDeadInfo deadInfo)
+    {
+        Call("OnCharacterDeadForPredatorRecord_ServerInternal", SdkEnv.StructBytes(deadInfo, 80));
+    }
 }

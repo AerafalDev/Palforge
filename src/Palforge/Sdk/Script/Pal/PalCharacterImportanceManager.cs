@@ -37,28 +37,28 @@ public class PalCharacterImportanceManager : UObject
 
     public void GetImportantNPC(out Palforge.Sdk.Script.Pal.PalCharacter[] outArray)
     {
-        var arguments = new byte[][] { Bytes<nint>(0) };
+        var arguments = new byte[][] { new byte[16] };
         Call("GetImportantNPC", arguments, out var outputs);
         outArray = SdkEnv.Objects<Palforge.Sdk.Script.Pal.PalCharacter>(outputs[0]);
     }
 
     public void GetAllPlayer(out Palforge.Sdk.Script.Pal.PalCharacter[] outArray)
     {
-        var arguments = new byte[][] { Bytes<nint>(0) };
+        var arguments = new byte[][] { new byte[16] };
         Call("GetAllPlayer", arguments, out var outputs);
         outArray = SdkEnv.Objects<Palforge.Sdk.Script.Pal.PalCharacter>(outputs[0]);
     }
 
     public void GetAllPalCharacter(out Palforge.Sdk.Script.Pal.PalCharacter[] outArray)
     {
-        var arguments = new byte[][] { Bytes<nint>(0) };
+        var arguments = new byte[][] { new byte[16] };
         Call("GetAllPalCharacter", arguments, out var outputs);
         outArray = SdkEnv.Objects<Palforge.Sdk.Script.Pal.PalCharacter>(outputs[0]);
     }
 
     public void GetAllNPC(out Palforge.Sdk.Script.Pal.PalCharacter[] outArray)
     {
-        var arguments = new byte[][] { Bytes<nint>(0) };
+        var arguments = new byte[][] { new byte[16] };
         Call("GetAllNPC", arguments, out var outputs);
         outArray = SdkEnv.Objects<Palforge.Sdk.Script.Pal.PalCharacter>(outputs[0]);
     }

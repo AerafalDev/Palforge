@@ -70,7 +70,7 @@ public class PalMapObjectDisplayCharacterModel : Palforge.Sdk.Script.Pal.PalMapO
 
     public bool GetDisplaySlots(out Palforge.Sdk.Script.Pal.PalIndividualCharacterSlot[] slots)
     {
-        var arguments = new byte[][] { Bytes<nint>(0) };
+        var arguments = new byte[][] { new byte[16] };
         var result = Call("GetDisplaySlots", arguments, out var outputs);
         slots = SdkEnv.Objects<Palforge.Sdk.Script.Pal.PalIndividualCharacterSlot>(outputs[0]);
         return As<byte>(result) is not 0;

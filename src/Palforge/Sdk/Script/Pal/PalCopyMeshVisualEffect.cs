@@ -61,7 +61,7 @@ public class PalCopyMeshVisualEffect : Palforge.Sdk.Script.Engine.Actor
 
     public void GetAllMesh(out Palforge.Sdk.Script.Engine.SceneComponent[] outComponent)
     {
-        var arguments = new byte[][] { Bytes<nint>(0) };
+        var arguments = new byte[][] { new byte[16] };
         Call("GetAllMesh", arguments, out var outputs);
         outComponent = SdkEnv.Objects<Palforge.Sdk.Script.Engine.SceneComponent>(outputs[0]);
     }

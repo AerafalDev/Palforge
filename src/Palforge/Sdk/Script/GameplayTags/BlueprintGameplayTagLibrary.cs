@@ -131,7 +131,7 @@ public class BlueprintGameplayTagLibrary : Palforge.Sdk.Script.Engine.BlueprintF
 
     public static void GetAllActorsOfClassMatchingTagQuery(UObject? worldContextObject, UObject? actorClass, Palforge.Sdk.Script.GameplayTags.GameplayTagQuery gameplayTagQuery, out Palforge.Sdk.Script.Engine.Actor[] outActors)
     {
-        var arguments = new byte[][] { Bytes<nint>(worldContextObject?.Address ?? 0), Bytes<nint>(actorClass?.Address ?? 0), SdkEnv.StructBytes(gameplayTagQuery, 72), Bytes<nint>(0) };
+        var arguments = new byte[][] { Bytes<nint>(worldContextObject?.Address ?? 0), Bytes<nint>(actorClass?.Address ?? 0), SdkEnv.StructBytes(gameplayTagQuery, 72), new byte[16] };
         SdkEnv.CallStatic("BlueprintGameplayTagLibrary", "GetAllActorsOfClassMatchingTagQuery", arguments, out var outputs);
         outActors = SdkEnv.Objects<Palforge.Sdk.Script.Engine.Actor>(outputs[3]);
     }

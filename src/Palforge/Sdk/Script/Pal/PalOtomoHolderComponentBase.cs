@@ -467,7 +467,7 @@ public class PalOtomoHolderComponentBase : Palforge.Sdk.Script.Engine.ActorCompo
 
     public void GetSlots(out Palforge.Sdk.Script.Pal.PalIndividualCharacterSlot[] slots)
     {
-        var arguments = new byte[][] { Bytes<nint>(0) };
+        var arguments = new byte[][] { new byte[16] };
         Call("GetSlots", arguments, out var outputs);
         slots = SdkEnv.Objects<Palforge.Sdk.Script.Pal.PalIndividualCharacterSlot>(outputs[0]);
     }
@@ -539,7 +539,7 @@ public class PalOtomoHolderComponentBase : Palforge.Sdk.Script.Engine.ActorCompo
 
     public void GetAllIndividualHandle(out Palforge.Sdk.Script.Pal.PalIndividualCharacterHandle[] outArray)
     {
-        var arguments = new byte[][] { Bytes<nint>(0) };
+        var arguments = new byte[][] { new byte[16] };
         Call("GetAllIndividualHandle", arguments, out var outputs);
         outArray = SdkEnv.Objects<Palforge.Sdk.Script.Pal.PalIndividualCharacterHandle>(outputs[0]);
     }

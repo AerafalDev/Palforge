@@ -179,7 +179,7 @@ public class PalWorkBase : UObject
 
     public void GetAssignedCharacters(out Palforge.Sdk.Script.Pal.PalIndividualCharacterSlot[] individualSlots)
     {
-        var arguments = new byte[][] { Bytes<nint>(0) };
+        var arguments = new byte[][] { new byte[16] };
         Call("GetAssignedCharacters", arguments, out var outputs);
         individualSlots = SdkEnv.Objects<Palforge.Sdk.Script.Pal.PalIndividualCharacterSlot>(outputs[0]);
     }

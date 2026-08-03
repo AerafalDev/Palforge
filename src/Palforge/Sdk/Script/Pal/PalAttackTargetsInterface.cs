@@ -28,7 +28,7 @@ public class PalAttackTargetsInterface : Palforge.Sdk.Script.CoreUObject.Interfa
 
     public bool IsHitTarget(out Palforge.Sdk.Script.Pal.EPalAttackTargetsType[] targetTypeList)
     {
-        var arguments = new byte[][] { Bytes<nint>(0) };
+        var arguments = new byte[][] { new byte[16] };
         var result = Call("IsHitTarget", arguments, out var outputs);
         targetTypeList = SdkEnv.Values<byte>(outputs[0]).Select(static value => (Palforge.Sdk.Script.Pal.EPalAttackTargetsType)value).ToArray();
         return As<byte>(result) is not 0;

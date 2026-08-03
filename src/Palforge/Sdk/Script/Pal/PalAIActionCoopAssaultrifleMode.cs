@@ -128,7 +128,7 @@ public class PalAIActionCoopAssaultrifleMode : Palforge.Sdk.Script.Pal.PalAIActi
 
     public void GetTargetEnemies(out Palforge.Sdk.Script.Pal.PalCharacter[] enemies)
     {
-        var arguments = new byte[][] { Bytes<nint>(0) };
+        var arguments = new byte[][] { new byte[16] };
         Call("GetTargetEnemies", arguments, out var outputs);
         enemies = SdkEnv.Objects<Palforge.Sdk.Script.Pal.PalCharacter>(outputs[0]);
     }

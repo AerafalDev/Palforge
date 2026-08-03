@@ -62,7 +62,7 @@ public class PalRandomIncidentNPCSpawner : Palforge.Sdk.Script.Pal.PalNPCSpawner
 
     public void GetSpawnedCharacters(out Palforge.Sdk.Script.Engine.Actor[] spawnedCharacters)
     {
-        var arguments = new byte[][] { Bytes<nint>(0) };
+        var arguments = new byte[][] { new byte[16] };
         Call("GetSpawnedCharacters", arguments, out var outputs);
         spawnedCharacters = SdkEnv.Objects<Palforge.Sdk.Script.Engine.Actor>(outputs[0]);
     }

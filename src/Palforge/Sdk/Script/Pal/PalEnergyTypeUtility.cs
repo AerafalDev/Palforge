@@ -28,7 +28,7 @@ public class PalEnergyTypeUtility : Palforge.Sdk.Script.Engine.BlueprintFunction
 
     public static void CollectWorkableElementTypes(Palforge.Sdk.Script.Pal.EPalEnergyType energyType, out Palforge.Sdk.Script.Pal.EPalElementType[] elementTypes)
     {
-        var arguments = new byte[][] { Bytes((byte)energyType), Bytes<nint>(0) };
+        var arguments = new byte[][] { Bytes((byte)energyType), new byte[16] };
         SdkEnv.CallStatic("PalEnergyTypeUtility", "CollectWorkableElementTypes", arguments, out var outputs);
         elementTypes = SdkEnv.Values<byte>(outputs[1]).Select(static value => (Palforge.Sdk.Script.Pal.EPalElementType)value).ToArray();
     }

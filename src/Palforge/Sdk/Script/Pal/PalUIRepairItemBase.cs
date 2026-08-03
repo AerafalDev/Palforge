@@ -39,7 +39,7 @@ public class PalUIRepairItemBase : Palforge.Sdk.Script.Pal.PalUserWidgetOverlayU
 
     public void CollectRepairableSlot(out Palforge.Sdk.Script.Pal.PalItemSlot[] outRepairableSlots)
     {
-        var arguments = new byte[][] { Bytes<nint>(0) };
+        var arguments = new byte[][] { new byte[16] };
         Call("CollectRepairableSlot", arguments, out var outputs);
         outRepairableSlots = SdkEnv.Objects<Palforge.Sdk.Script.Pal.PalItemSlot>(outputs[0]);
     }

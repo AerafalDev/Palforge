@@ -92,7 +92,7 @@ public class PalPlayerDataPalStorage : UObject
 
     public void GetSlotsInPage(int pageIndex, out Palforge.Sdk.Script.Pal.PalIndividualCharacterSlot[] slots)
     {
-        var arguments = new byte[][] { Bytes(pageIndex), Bytes<nint>(0) };
+        var arguments = new byte[][] { Bytes(pageIndex), new byte[16] };
         Call("GetSlotsInPage", arguments, out var outputs);
         slots = SdkEnv.Objects<Palforge.Sdk.Script.Pal.PalIndividualCharacterSlot>(outputs[1]);
     }

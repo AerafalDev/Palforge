@@ -134,7 +134,7 @@ public class PalQuestData : UObject
 
     public void GetSortedQuestBlocksForUI(out Palforge.Sdk.Script.Pal.PalQuestBlock[] outBlocks)
     {
-        var arguments = new byte[][] { Bytes<nint>(0) };
+        var arguments = new byte[][] { new byte[16] };
         Call("GetSortedQuestBlocksForUI", arguments, out var outputs);
         outBlocks = SdkEnv.Objects<Palforge.Sdk.Script.Pal.PalQuestBlock>(outputs[0]);
     }
@@ -146,7 +146,7 @@ public class PalQuestData : UObject
 
     public void GetQuestBlocks(out Palforge.Sdk.Script.Pal.PalQuestBlock[] outBlocks)
     {
-        var arguments = new byte[][] { Bytes<nint>(0) };
+        var arguments = new byte[][] { new byte[16] };
         Call("GetQuestBlocks", arguments, out var outputs);
         outBlocks = SdkEnv.Objects<Palforge.Sdk.Script.Pal.PalQuestBlock>(outputs[0]);
     }

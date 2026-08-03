@@ -64,14 +64,14 @@ public class NiagaraSimCache : UObject
 
     public void ReadIntAttribute(out int[] outValues, string attributeName, string emitterName, int frameIndex)
     {
-        var arguments = new byte[][] { Bytes<nint>(0), SdkEnv.NameBytes(attributeName), SdkEnv.NameBytes(emitterName), Bytes(frameIndex) };
+        var arguments = new byte[][] { new byte[16], SdkEnv.NameBytes(attributeName), SdkEnv.NameBytes(emitterName), Bytes(frameIndex) };
         Call("ReadIntAttribute", arguments, out var outputs);
         outValues = SdkEnv.Values<int>(outputs[0]);
     }
 
     public void ReadFloatAttribute(out float[] outValues, string attributeName, string emitterName, int frameIndex)
     {
-        var arguments = new byte[][] { Bytes<nint>(0), SdkEnv.NameBytes(attributeName), SdkEnv.NameBytes(emitterName), Bytes(frameIndex) };
+        var arguments = new byte[][] { new byte[16], SdkEnv.NameBytes(attributeName), SdkEnv.NameBytes(emitterName), Bytes(frameIndex) };
         Call("ReadFloatAttribute", arguments, out var outputs);
         outValues = SdkEnv.Values<float>(outputs[0]);
     }

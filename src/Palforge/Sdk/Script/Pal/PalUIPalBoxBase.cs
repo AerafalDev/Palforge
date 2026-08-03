@@ -88,7 +88,7 @@ public class PalUIPalBoxBase : Palforge.Sdk.Script.Pal.PalUserWidgetOverlayUI
 
     public bool GetNowDisplayWorkerList(out Palforge.Sdk.Script.Pal.PalIndividualCharacterSlot[] outSlots)
     {
-        var arguments = new byte[][] { Bytes<nint>(0) };
+        var arguments = new byte[][] { new byte[16] };
         var result = Call("GetNowDisplayWorkerList", arguments, out var outputs);
         outSlots = SdkEnv.Objects<Palforge.Sdk.Script.Pal.PalIndividualCharacterSlot>(outputs[0]);
         return As<byte>(result) is not 0;

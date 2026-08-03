@@ -86,7 +86,7 @@ public class PalPlayerPartyPalHolder : UObject
 
     public void GetPartyMember(out Palforge.Sdk.Script.Pal.PalIndividualCharacterHandle[] outPartyMember)
     {
-        var arguments = new byte[][] { Bytes<nint>(0) };
+        var arguments = new byte[][] { new byte[16] };
         Call("GetPartyMember", arguments, out var outputs);
         outPartyMember = SdkEnv.Objects<Palforge.Sdk.Script.Pal.PalIndividualCharacterHandle>(outputs[0]);
     }

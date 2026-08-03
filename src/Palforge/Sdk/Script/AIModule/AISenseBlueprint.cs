@@ -60,14 +60,14 @@ public class AISenseBlueprint : Palforge.Sdk.Script.AIModule.AISense
 
     public void GetAllListenerComponents(out Palforge.Sdk.Script.AIModule.AIPerceptionComponent[] listenerComponents)
     {
-        var arguments = new byte[][] { Bytes<nint>(0) };
+        var arguments = new byte[][] { new byte[16] };
         Call("GetAllListenerComponents", arguments, out var outputs);
         listenerComponents = SdkEnv.Objects<Palforge.Sdk.Script.AIModule.AIPerceptionComponent>(outputs[0]);
     }
 
     public void GetAllListenerActors(out Palforge.Sdk.Script.Engine.Actor[] listenerActors)
     {
-        var arguments = new byte[][] { Bytes<nint>(0) };
+        var arguments = new byte[][] { new byte[16] };
         Call("GetAllListenerActors", arguments, out var outputs);
         listenerActors = SdkEnv.Objects<Palforge.Sdk.Script.Engine.Actor>(outputs[0]);
     }

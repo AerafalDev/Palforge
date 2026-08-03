@@ -90,7 +90,7 @@ public class NiagaraPreviewGrid : Palforge.Sdk.Script.Engine.Actor
 
     public void GetPreviews(out Palforge.Sdk.Script.Niagara.NiagaraComponent[] outPreviews)
     {
-        var arguments = new byte[][] { Bytes<nint>(0) };
+        var arguments = new byte[][] { new byte[16] };
         Call("GetPreviews", arguments, out var outputs);
         outPreviews = SdkEnv.Objects<Palforge.Sdk.Script.Niagara.NiagaraComponent>(outputs[0]);
     }

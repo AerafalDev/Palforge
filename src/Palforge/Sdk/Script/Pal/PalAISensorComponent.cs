@@ -91,21 +91,21 @@ public class PalAISensorComponent : Palforge.Sdk.Script.Engine.ActorComponent
 
     public void SightCheckAllPlayer(out Palforge.Sdk.Script.Pal.PalCharacter[] inSightPlayers, float rangeRate)
     {
-        var arguments = new byte[][] { Bytes<nint>(0), Bytes(rangeRate) };
+        var arguments = new byte[][] { new byte[16], Bytes(rangeRate) };
         Call("SightCheckAllPlayer", arguments, out var outputs);
         inSightPlayers = SdkEnv.Objects<Palforge.Sdk.Script.Pal.PalCharacter>(outputs[0]);
     }
 
     public void SightCheckAllEdibleDeadNPC(out Palforge.Sdk.Script.Pal.PalCharacter[] inSightCharacters)
     {
-        var arguments = new byte[][] { Bytes<nint>(0) };
+        var arguments = new byte[][] { new byte[16] };
         Call("SightCheckAllEdibleDeadNPC", arguments, out var outputs);
         inSightCharacters = SdkEnv.Objects<Palforge.Sdk.Script.Pal.PalCharacter>(outputs[0]);
     }
 
     public void SightCheckAllAliveNPC(out Palforge.Sdk.Script.Pal.PalCharacter[] inSightCharacters, bool ignoreOtomo)
     {
-        var arguments = new byte[][] { Bytes<nint>(0), Bytes<byte>(ignoreOtomo ? (byte)1 : (byte)0) };
+        var arguments = new byte[][] { new byte[16], Bytes<byte>(ignoreOtomo ? (byte)1 : (byte)0) };
         Call("SightCheckAllAliveNPC", arguments, out var outputs);
         inSightCharacters = SdkEnv.Objects<Palforge.Sdk.Script.Pal.PalCharacter>(outputs[0]);
     }

@@ -51,7 +51,7 @@ public class EnvQueryInstanceBlueprintWrapper : UObject
 
     public bool GetQueryResultsAsActors(out Palforge.Sdk.Script.Engine.Actor[] resultActors)
     {
-        var arguments = new byte[][] { Bytes<nint>(0) };
+        var arguments = new byte[][] { new byte[16] };
         var result = Call("GetQueryResultsAsActors", arguments, out var outputs);
         resultActors = SdkEnv.Objects<Palforge.Sdk.Script.Engine.Actor>(outputs[0]);
         return As<byte>(result) is not 0;

@@ -42,7 +42,7 @@ public class EnvQueryContextBlueprintBase : Palforge.Sdk.Script.AIModule.EnvQuer
 
     public void ProvideActorsSet(UObject? querierObject, Palforge.Sdk.Script.Engine.Actor? querierActor, out Palforge.Sdk.Script.Engine.Actor[] resultingActorsSet)
     {
-        var arguments = new byte[][] { Bytes<nint>(querierObject?.Address ?? 0), Bytes<nint>(querierActor?.Address ?? 0), Bytes<nint>(0) };
+        var arguments = new byte[][] { Bytes<nint>(querierObject?.Address ?? 0), Bytes<nint>(querierActor?.Address ?? 0), new byte[16] };
         Call("ProvideActorsSet", arguments, out var outputs);
         resultingActorsSet = SdkEnv.Objects<Palforge.Sdk.Script.Engine.Actor>(outputs[2]);
     }

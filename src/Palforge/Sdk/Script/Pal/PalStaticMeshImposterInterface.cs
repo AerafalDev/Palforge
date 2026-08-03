@@ -28,7 +28,7 @@ public class PalStaticMeshImposterInterface : Palforge.Sdk.Script.CoreUObject.In
 
     public void GetStaticMeshComponents(out Palforge.Sdk.Script.Engine.StaticMeshComponent[] outComponents)
     {
-        var arguments = new byte[][] { Bytes<nint>(0) };
+        var arguments = new byte[][] { new byte[16] };
         Call("GetStaticMeshComponents", arguments, out var outputs);
         outComponents = SdkEnv.Objects<Palforge.Sdk.Script.Engine.StaticMeshComponent>(outputs[0]);
     }

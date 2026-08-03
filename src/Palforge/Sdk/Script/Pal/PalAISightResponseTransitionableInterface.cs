@@ -28,7 +28,7 @@ public class PalAISightResponseTransitionableInterface : Palforge.Sdk.Script.Cor
 
     public void GetTransitionableJudgementType(out Palforge.Sdk.Script.Pal.EPalAISightJudgementType[] judgeTypeList)
     {
-        var arguments = new byte[][] { Bytes<nint>(0) };
+        var arguments = new byte[][] { new byte[16] };
         Call("GetTransitionableJudgementType", arguments, out var outputs);
         judgeTypeList = SdkEnv.Values<byte>(outputs[0]).Select(static value => (Palforge.Sdk.Script.Pal.EPalAISightJudgementType)value).ToArray();
     }

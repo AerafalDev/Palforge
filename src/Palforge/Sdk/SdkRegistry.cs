@@ -3523,6 +3523,7 @@ internal static class SdkRegistry
         context.RegisterSdkFactory("PalAutoSaveDisabler", typeof(Palforge.Sdk.Script.Pal.PalAutoSaveDisabler), static (address, reflection) => new Palforge.Sdk.Script.Pal.PalAutoSaveDisabler(address, reflection));
         context.RegisterSdkFactory("PalPlayerSaveDataObject", typeof(Palforge.Sdk.Script.Pal.PalPlayerSaveDataObject), static (address, reflection) => new Palforge.Sdk.Script.Pal.PalPlayerSaveDataObject(address, reflection));
         context.RegisterSdkFactory("PalSaveGameManager", typeof(Palforge.Sdk.Script.Pal.PalSaveGameManager), static (address, reflection) => new Palforge.Sdk.Script.Pal.PalSaveGameManager(address, reflection));
+        context.RegisterSdkFactory("PalSaveGameStorageUtility", typeof(Palforge.Sdk.Script.Pal.PalSaveGameStorageUtility), static (address, reflection) => new Palforge.Sdk.Script.Pal.PalSaveGameStorageUtility(address, reflection));
         context.RegisterSdkFactory("PalScrollBox", typeof(Palforge.Sdk.Script.Pal.PalScrollBox), static (address, reflection) => new Palforge.Sdk.Script.Pal.PalScrollBox(address, reflection));
         context.RegisterSdkFactory("PalScrollBoxSlot", typeof(Palforge.Sdk.Script.Pal.PalScrollBoxSlot), static (address, reflection) => new Palforge.Sdk.Script.Pal.PalScrollBoxSlot(address, reflection));
         context.RegisterSdkFactory("PalSearchLightRotationStrategy", typeof(Palforge.Sdk.Script.Pal.PalSearchLightRotationStrategy), static (address, reflection) => new Palforge.Sdk.Script.Pal.PalSearchLightRotationStrategy(address, reflection));

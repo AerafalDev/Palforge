@@ -48,7 +48,7 @@ public class PalUIGuildLabModel : UObject
 
     public void GetTargetWorkSuitabilities(out Palforge.Sdk.Script.Pal.EPalWorkSuitability[] outArray)
     {
-        var arguments = new byte[][] { Bytes<nint>(0) };
+        var arguments = new byte[][] { new byte[16] };
         Call("GetTargetWorkSuitabilities", arguments, out var outputs);
         outArray = SdkEnv.Values<byte>(outputs[0]).Select(static value => (Palforge.Sdk.Script.Pal.EPalWorkSuitability)value).ToArray();
     }

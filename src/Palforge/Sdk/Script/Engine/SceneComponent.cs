@@ -462,7 +462,7 @@ public class SceneComponent : Palforge.Sdk.Script.Engine.ActorComponent
 
     public void GetParentComponents(out Palforge.Sdk.Script.Engine.SceneComponent[] parents)
     {
-        var arguments = new byte[][] { Bytes<nint>(0) };
+        var arguments = new byte[][] { new byte[16] };
         Call("GetParentComponents", arguments, out var outputs);
         parents = SdkEnv.Objects<Palforge.Sdk.Script.Engine.SceneComponent>(outputs[0]);
     }
@@ -484,7 +484,7 @@ public class SceneComponent : Palforge.Sdk.Script.Engine.ActorComponent
 
     public void GetChildrenComponents(bool bIncludeAllDescendants, out Palforge.Sdk.Script.Engine.SceneComponent[] children)
     {
-        var arguments = new byte[][] { Bytes<byte>(bIncludeAllDescendants ? (byte)1 : (byte)0), Bytes<nint>(0) };
+        var arguments = new byte[][] { Bytes<byte>(bIncludeAllDescendants ? (byte)1 : (byte)0), new byte[16] };
         Call("GetChildrenComponents", arguments, out var outputs);
         children = SdkEnv.Objects<Palforge.Sdk.Script.Engine.SceneComponent>(outputs[1]);
     }
