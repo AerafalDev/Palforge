@@ -23,7 +23,7 @@ internal static class SdkMethodMap
                 return new SdkParameter(name, filled, $"SdkEnv.StructBytes({name}, {facts.ElementSize})", Destination: $"{name}.Address");
 
             if (facts is { Kind: PropertyKind.Array, Element: { } element } && ElementList(element) is { } list)
-                return new SdkParameter(name, list.Type, "Bytes<nint>(0)", "out", list.Reader);
+                return new SdkParameter(name, list.Type, $"new byte[{facts.ElementSize}]", "out", list.Reader);
 
             return null;
         }

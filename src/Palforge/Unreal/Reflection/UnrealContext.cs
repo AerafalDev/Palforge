@@ -1556,6 +1556,11 @@ internal sealed class UnrealContext
             {
                 var slot = frame + OffsetInternalOf(inputs[i]);
 
+                var parmFlags = PropertyFlagsOf(inputs[i]);
+
+                if ((parmFlags & EPropertyFlags.OutParm) is not 0 && (parmFlags & EPropertyFlags.ReferenceParm) is 0)
+                    continue;
+
                 if (WrapProperty(inputs[i]) is FStrProperty)
                 {
                     if (!BuildStringArgument(slot, args[i]))
