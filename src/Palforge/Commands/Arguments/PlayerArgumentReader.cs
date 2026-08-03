@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using Palforge.Commands.Modules;
+﻿using Palforge.Commands.Modules;
 using Palforge.Sdk.Script.Pal;
 using Palforge.Unreal;
 
