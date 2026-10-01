@@ -1,23 +1,45 @@
-# Visual Studio Code
-.vscode/
-
-# Visual Studio
-.vs/
-
-# Rider
-.idea/
-
-# xmake
-.xmake/
-
-# Build outputs
-[Bb]uild/
-[Dd]ebug/
-[Rr]elease/
-x64/
-x86/
+# Build output
 [Bb]in/
 [Oo]bj/
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Bb]uild/
+bld/
+[Oo]ut/
+artifacts/
+nupkg/
+project.lock.json
+msbuild.log
+msbuild.err
+msbuild.wrn
 
-# Release artifacts produced by tools/pack.ps1
-/artifacts/
+# Test results
+TestResults/
+*.trx
+
+# IDEs and editors
+.vs/
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.swp
+*.*~
+
+# OS and tooling
+.DS_Store
+*.pyc
+
+# Documentation site
+node_modules/
+docs/.next/
+docs/out/
+
+#### Repository-specific ####
+.xmake/
