@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageVersion Include="Microsoft.Windows.CsWin32" Version="0.3.335" />
+    <PackageVersion Include="Microsoft.Windows.CsWin32" Version="0.3.346" />
     <PackageVersion Include="System.Reflection.MetadataLoadContext" Version="10.0.12" />
     <PackageVersion Include="HostFxrSharp" Version="1.0.1" />
   </ItemGroup>
